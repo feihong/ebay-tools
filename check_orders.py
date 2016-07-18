@@ -17,10 +17,7 @@ def get_items(order):
 
 if __name__ == '__main__':
     api = Trading(config_file=None, **config.credentials)
-    # response = api.execute('GetOrders', {
-    #     'NumberOfDays': 1,
-    # })
-    yesterday = arrow.utcnow().replace(days=-1)
+    yesterday = arrow.utcnow().replace(hours=-24)
     nowish = arrow.utcnow().replace(minutes=-2)
     response = api.execute('GetOrders', {
         'CreateTimeFrom': yesterday,
@@ -35,7 +32,7 @@ if __name__ == '__main__':
             continue
         if hasattr(order, 'ShippedTime'):
             continue
-        
+
         count += 1
         print('Buyer: ' + order.BuyerUserID)
         print('Status: ' + order.OrderStatus)
@@ -51,5 +48,5 @@ if __name__ == '__main__':
         print(addr)
         print('='*80)
 
-    print('Fetched %d orders' % len(orders))
+    print('%d orders created within the last 24 hours' % len(orders))
     print('%d orders awaiting shipment' % count)
