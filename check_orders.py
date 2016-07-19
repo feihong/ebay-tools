@@ -86,6 +86,8 @@ def send_text(order_count):
 if __name__ == '__main__':
     orders = list(get_orders())
     if len(orders):
+        send_text(len(orders))
+
         tmpl = Template(filename='check_orders.plim', preprocessor=preprocessor)
         with open(config.REPORT_PATH, 'w') as fp:
             html = tmpl.render(
