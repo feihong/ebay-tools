@@ -20,6 +20,7 @@ html lang='en'
       table.table.table-striped.table-bordered
         tbody
           = row('Order ID', order.OrderID)
+          = row('Shipped?', 'Yes' if hasattr(order, 'ShippedTime') else 'No')
           = row('Buyer', order.BuyerUserID)
           = row('Amount paid', order.AmountPaid.value)
           = row('Address', get_address(order).replace('\n', '<br>'))
