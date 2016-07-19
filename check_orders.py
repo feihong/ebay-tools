@@ -69,8 +69,9 @@ def get_model(item):
 
 def get_address(order):
     sa = order.ShippingAddress
-    addr = (sa.Name, sa.Street1, sa.Street2, sa.CityName, sa.StateOrProvince,
-            sa.CountryName, sa.PostalCode)
+    addr = (sa.Name, sa.Street1, sa.Street2,
+            '%s, %s %s' % (sa.CityName, sa.StateOrProvince, sa.PostalCode),
+            sa.CountryName)
     return '\n'.join(line for line in addr if line is not None and line.strip())
 
 
