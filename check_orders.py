@@ -28,8 +28,8 @@ def get_orders():
     for order in orders:
         if not hasattr(order, 'PaidTime'):
             continue
-        # if hasattr(order, 'ShippedTime'):
-        #     continue
+        if hasattr(order, 'ShippedTime'):
+            continue
 
         count += 1
         print('Buyer: ' + order.BuyerUserID)
@@ -79,7 +79,8 @@ def get_address(order):
 def send_text(order_count):
     data = dict(
         number=config.SMS_NUMBER,
-        message='%d orders awaiting shipment' % order_count)
+        message='%d orders awaiting shipment  %s' % (
+            order_count, config.REPORT_URL))
     requests.post('http://textbelt.com/text', data)
 
 
