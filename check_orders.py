@@ -9,6 +9,7 @@ from pathlib import Path
 import requests
 from mako.template import Template
 from plim import preprocessor
+import clint.arguments
 from ebaysdk.trading import Connection as Trading
 from ebaysdk.shopping import Connection as Shopping
 
@@ -85,9 +86,12 @@ def send_text(order_count):
 
 
 if __name__ == '__main__':
+    args = clint.arguments.Args()
+
     orders = list(get_orders())
     if len(orders):
-        send_text(len(orders))
+        if args.flags.contains('--send-text'):
+            send_text(len(orders))
 
         tmpl_file = Path(__file__).parent / 'check_orders.plim'
         tmpl = Template(filename=str(tmpl_file), preprocessor=preprocessor)
