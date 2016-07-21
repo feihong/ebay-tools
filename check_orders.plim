@@ -5,8 +5,7 @@ html lang='en'
     meta name='viewport' content='width=device-width, initial-scale=1, shrink-to-fit=no'
     meta http-equiv='x-ua-compatible' content='ie=edge'
     title Orders awaiting shipment
-    -block extrahead
-      link rel='stylesheet' href='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css' integrity='sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7' crossorigin='anonymous'
+    link rel='stylesheet' href='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css' integrity='sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7' crossorigin='anonymous'
 
   body.container
     h1 Orders awaiting shipment
@@ -15,8 +14,8 @@ html lang='en'
 
     -def row(label, value)
       tr
-        td = label
-        td = value
+        td: strong = label
+        td(colspan=2) = value
 
     -for order in orders
       table.table.table-striped.table-bordered
@@ -26,9 +25,12 @@ html lang='en'
           = row('Buyer', order.BuyerUserID)
           = row('Amount paid', order.AmountPaid.value)
           = row('Address', get_address(order).replace('\n', '<br>'))
+          --- items = list(get_items(order))
           tr
-              td Items
-              td
-                ul
-                  -for item in get_items(order)
-                    li = '%s => %s' % (item.Title, item.Model)
+              td(rowspan=len(items)): strong Items
+              td = items[0].Title
+              td = items[0].Model
+          -for item in items[1:]
+            tr
+              td = item.Title
+              td = item.Model
