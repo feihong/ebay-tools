@@ -92,8 +92,10 @@ if __name__ == '__main__':
         tmpl_file = Path(__file__).parent / 'check_orders.plim'
         tmpl = Template(filename=str(tmpl_file), preprocessor=preprocessor)
 
+        orders.sort(key=lambda x: x.PaidTime, reverse=True)
         with open(config.REPORT_PATH, 'w') as fp:
             html = tmpl.render(
+                updated_time=arrow.utcnow().to(config.TIME_ZONE),
                 orders=orders,
                 get_items=get_items,
                 get_address=get_address)

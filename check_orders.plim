@@ -11,6 +11,8 @@ html lang='en'
   body.container
     h1 Orders awaiting shipment
 
+    p Updated at ${updated_time}
+
     -def row(label, value)
       tr
         td = label

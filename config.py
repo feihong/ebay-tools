@@ -9,6 +9,7 @@ if 'EBAY_PARAMS' in environ:
     SMS_NUMBER = os.environ['SMS_NUMBER']
     REPORT_PATH = 'report.html'
     REPORT_URL = ''
+    TIME_ZONE = 'US/Central'
 else:
     from file_config import *
 
