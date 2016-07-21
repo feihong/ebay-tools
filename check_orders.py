@@ -4,6 +4,7 @@ Check for orders that have been paid but have not been shipped.
 """
 import arrow
 import datetime
+from pathlib import Path
 
 import requests
 from mako.template import Template
@@ -79,8 +80,7 @@ def get_address(order):
 def send_text(order_count):
     data = dict(
         number=config.SMS_NUMBER,
-        message='%d orders awaiting shipment  %s' % (
-            order_count, config.REPORT_URL))
+        message='%d orders awaiting shipment' % order_count)
     requests.post('http://textbelt.com/text', data)
 
 
@@ -89,7 +89,9 @@ if __name__ == '__main__':
     if len(orders):
         send_text(len(orders))
 
-        tmpl = Template(filename='check_orders.plim', preprocessor=preprocessor)
+        tmpl_file = Path(__file__).parent / 'check_orders.plim'
+        tmpl = Template(filename=str(tmpl_file), preprocessor=preprocessor)
+
         with open(config.REPORT_PATH, 'w') as fp:
             html = tmpl.render(
                 orders=orders,
