@@ -18,8 +18,8 @@ html lang='en'
         td = value
 
     -def model_display(model)
-      span style='margin-right: 1em' = model
-      button.btn.btn-primary.btn-sm.copy data-model=model Copy
+      input style='margin-right: 1em' readonly='' value=model
+      button.btn.btn-primary.btn-sm.copy Copy
 
     -for order in orders
       table.table.table-striped.table-bordered
@@ -43,3 +43,12 @@ html lang='en'
                 = item.Title
                 br
                 = model_display(item.Model)
+
+    script src='http://code.jquery.com/jquery-3.1.0.slim.min.js'
+    script
+      $('button.copy').on('click', function(evt) {
+        var input = $(this).prev('input')[0]
+        input.focus()
+        input.setSelectionRange(0, input.value.length)
+        document.execCommand('copy')
+      })
