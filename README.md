@@ -13,5 +13,5 @@ pip install -r requirements.txt
 Add entry to crontab:
 
 ```
-0 13-23,0-3 * * * source ~/.virtualenvs/ebay/bin/activate && python ~/ebay-tools/check_orders.py
+0,30 13-23,0-3 * * * source ~/.virtualenvs/ebay/bin/activate && python ~/ebay-tools/check_orders.py --send-text
 ```
