@@ -15,7 +15,11 @@ html lang='en'
     -def row(label, value)
       tr
         td: strong = label
-        td(colspan=2) = value
+        td = value
+
+    -def model_display(model)
+      span style='margin-right: 1em' = model
+      button.btn.btn-primary.btn-sm.copy data-model=model Copy
 
     -for order in orders
       table.table.table-striped.table-bordered
@@ -27,10 +31,15 @@ html lang='en'
           = row('Address', get_address(order).replace('\n', '<br>'))
           --- items = list(get_items(order))
           tr
-              td(rowspan=len(items)): strong Items
-              td = items[0].Title
-              td = items[0].Model
+            td(rowspan=len(items)): strong Items
+            td
+              = items[0].Title
+              br
+              = model_display(items[0].Model)
+
           -for item in items[1:]
             tr
-              td = item.Title
-              td = item.Model
+              td
+                = item.Title
+                br
+                = model_display(item.Model)
