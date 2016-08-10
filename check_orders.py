@@ -32,8 +32,8 @@ def get_orders():
     for order in orders:
         if not hasattr(order, 'PaidTime'):
             continue
-        # if hasattr(order, 'ShippedTime'):
-        #     continue
+        if hasattr(order, 'ShippedTime'):
+            continue
 
         count += 1
         print('Buyer: ' + order.BuyerUserID)
@@ -97,7 +97,7 @@ def send_text(number, message):
             }
         }
     )
-    # pprint(resp)
+    pprint(resp)
 
 
 if __name__ == '__main__':
