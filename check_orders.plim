@@ -10,7 +10,7 @@ html lang='en'
   body.container
     h1 Orders awaiting shipment
 
-    p Updated at ${updated_time}
+    p Updated at ${updated_time.format('YYYY-MM-DD HH:mm')}
 
     -def row(label, value)
       tr

@@ -2,10 +2,12 @@
 Check for orders that have been paid but have not been shipped.
 
 """
-import arrow
 import datetime
 from pathlib import Path
+from pprint import pprint
 
+import arrow
+import boto3
 import requests
 from mako.template import Template
 from plim import preprocessor
@@ -30,8 +32,8 @@ def get_orders():
     for order in orders:
         if not hasattr(order, 'PaidTime'):
             continue
-        if hasattr(order, 'ShippedTime'):
-            continue
+        # if hasattr(order, 'ShippedTime'):
+        #     continue
 
         count += 1
         print('Buyer: ' + order.BuyerUserID)
@@ -77,12 +79,25 @@ def get_address(order):
     return '\n'.join(line for line in addr if line is not None and line.strip())
 
 
-
-def send_text(order_count):
-    data = dict(
-        number=config.SMS_NUMBER,
-        message='%d orders awaiting shipment' % order_count)
-    requests.post('http://textbelt.com/text', data)
+def send_text(number, message):
+    access_key, secret_key = config.AWS_PARAMS.split(';')
+    client = boto3.client(
+        'sns',
+        region_name='us-east-1',
+        aws_access_key_id=access_key,
+        aws_secret_access_key=secret_key,
+    )
+    resp = client.publish(
+        PhoneNumber=number,
+        Message=message,
+        MessageAttributes={
+            'SMSType': {
+                'StringValue': 'Promotional',
+                'DataType': 'String',
+            }
+        }
+    )
+    # pprint(resp)
 
 
 if __name__ == '__main__':
@@ -91,7 +106,9 @@ if __name__ == '__main__':
     orders = list(get_orders())
     if len(orders):
         if args.flags.contains('--send-text'):
-            send_text(len(orders))
+            send_text(
+                config.SMS_NUMBER,
+                '{} orders awaiting shipment'.format(len(orders)))
 
         tmpl_file = Path(__file__).parent / 'check_orders.plim'
         tmpl = Template(filename=str(tmpl_file), preprocessor=preprocessor)
