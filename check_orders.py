@@ -18,8 +18,8 @@ from ebaysdk.shopping import Connection as Shopping
 import config
 
 
-def get_orders():
-    api = Trading(config_file=None, **config.credentials)
+def get_orders(credentials):
+    api = Trading(config_file=None, **credentials)
     yesterday = arrow.utcnow().replace(hours=-24)
     nowish = arrow.utcnow().replace(minutes=-2)
     response = api.execute('GetOrders', {

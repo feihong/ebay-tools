@@ -1,19 +1,20 @@
-import os
+# These values can be overridden in config_local.py
+REPORT_PATH = 'report.html'
+REPORT_URL = ''
+TIME_ZONE = 'US/Central'
 
 
-environ = os.environ
+from config_local import *
 
 
-if 'EBAY_PARAMS' in environ:
-    EBAY_PARAMS = os.environ['EBAY_PARAMS']
-    SMS_NUMBER = os.environ['SMS_NUMBER']
-    AWS_PARAMS = os.environ['AWS_PARAMS']
-    REPORT_PATH = 'report.html'
-    REPORT_URL = ''
-    TIME_ZONE = 'US/Central'
-else:
-    from file_config import *
+ebay_keys = ('appid', 'devid', 'certid', 'token')
+EBAY_CREDENTIALS = {}
+for k, v in EBAY_PARAMS:
+    EBAY_CREDENTIALS[k] = dict(zip(ebay_keys, v.split(';')))
 
 
-credentials = dict(zip(
-    ('appid', 'devid', 'certid', 'token'), EBAY_PARAMS.split(';')))
+aws = AWS_PARAMS.split(';')
+AWS_CREDENTIALS = dict(
+    aws_access_key_id=aws[0],
+    aws_secret_access_key=aws[1],
+)
