@@ -1,0 +1,11 @@
+-inherit base.plim
+
+-block title
+  Orders awaiting shipment
+
+h1 = title()
+
+ul
+  -for user_id in user_ids:
+    li
+      a href='${user_id}.html' = user_id
