@@ -36,15 +36,15 @@ def get_orders(credentials):
             continue
 
         count += 1
-        print('Buyer: ' + order.BuyerUserID)
-        print('Status: ' + order.OrderStatus)
-        print('Paid %s on %s' % (order.AmountPaid.value, order.PaidTime))
-        print('Items:')
-        for item in get_items(order):
-            print('- %s => %s' % (item.Title, item.Model))
-        print('Address:')
-        print(get_address(order))
-        print('='*80)
+        # print('Buyer: ' + order.BuyerUserID)
+        # print('Status: ' + order.OrderStatus)
+        # print('Paid %s on %s' % (order.AmountPaid.value, order.PaidTime))
+        # print('Items:')
+        # for item in get_items(order):
+        #     print('- %s => %s' % (item.Title, item.Model))
+        # print('Address:')
+        # print(get_address(order))
+        # print('='*80)
         yield order
 
     print('%d orders created within the last 24 hours' % len(orders))
@@ -77,27 +77,6 @@ def get_address(order):
             '%s, %s %s' % (sa.CityName, sa.StateOrProvince, sa.PostalCode),
             sa.CountryName)
     return '\n'.join(line for line in addr if line is not None and line.strip())
-
-
-def send_text(number, message):
-    access_key, secret_key = config.AWS_PARAMS.split(';')
-    client = boto3.client(
-        'sns',
-        region_name='us-east-1',
-        aws_access_key_id=access_key,
-        aws_secret_access_key=secret_key,
-    )
-    resp = client.publish(
-        PhoneNumber=number,
-        Message=message,
-        MessageAttributes={
-            'SMSType': {
-                'StringValue': 'Promotional',
-                'DataType': 'String',
-            }
-        }
-    )
-    pprint(resp)
 
 
 if __name__ == '__main__':
