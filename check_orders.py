@@ -7,11 +7,7 @@ from pathlib import Path
 from pprint import pprint
 
 import arrow
-import boto3
 import requests
-from mako.template import Template
-from plim import preprocessor
-import clint.arguments
 from ebaysdk.trading import Connection as Trading
 from ebaysdk.shopping import Connection as Shopping
 

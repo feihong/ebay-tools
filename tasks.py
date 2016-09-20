@@ -5,12 +5,11 @@ import arrow
 
 import config
 from util import render_to_file
-# from check_orders import get_orders
 import check_orders
 
 
 @task
-def check_orders(ctx, send_text=False):
+def generate_report(ctx, send_text=False):
     report_dir = Path(config.REPORT_DIR)
     user_ids = [p[0] for p in config.EBAY_CREDENTIALS]
     render_to_file(report_dir / 'index.html', 'index.plim', user_ids=user_ids)
