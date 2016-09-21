@@ -9,6 +9,9 @@ from ebaysdk.shopping import Connection as Shopping
 import config
 
 
+SHIPPING_URL_TEMPLATE = 'https://payments.ebay.com/ws/eBayISAPI.dll?PrintPostage&transactionid={transaction_id}&ssPageName=STRK:MESO:PSHP&itemid={item_id}'
+
+
 class OrderRequest:
     def __init__(self, credentials):
         self.credentials = credentials
@@ -37,6 +40,10 @@ class OrderRequest:
         for order in orders:
             order.items = list(self.get_items(order))
             order.address = get_address(order)
+
+            item_id, transaction_id = order.OrderID.split('-')
+            order.shipping_url = SHIPPING_URL_TEMPLATE.format(
+                transaction_id=transaction_id, item_id=item_id)
         return orders
 
     def get_items(self, order):

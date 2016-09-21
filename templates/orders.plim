@@ -6,6 +6,8 @@ html lang='en'
     meta http-equiv='x-ua-compatible' content='ie=edge'
     title Orders awaiting shipment
     link rel='stylesheet' href='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css' integrity='sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7' crossorigin='anonymous'
+    style
+      td.tlabel { font-weight: bold; }
 
   body.container
     h1 Orders awaiting shipment for ${user_id}
@@ -14,7 +16,7 @@ html lang='en'
 
     -def row(label, value)
       tr
-        td: strong = label
+        td.tlabel = label
         td = value
 
     -def model_display(model)
@@ -24,25 +26,21 @@ html lang='en'
     -for order in orders
       table.table.table-striped.table-bordered
         tbody
-          = row('Order ID', order.OrderID)
-          = row('Shipped?', 'Yes' if hasattr(order, 'ShippedTime') else 'No')
+          tr
+            td.tlabel Order ID
+            td
+              a href=${order.shipping_url} = order.OrderID
+          / = row('Shipped?', 'Yes' if hasattr(order, 'ShippedTime') else 'No')
           = row('Buyer', order.BuyerUserID)
           = row('Amount paid', order.AmountPaid.value)
           = row('Address', order.address.replace('\n', '<br>'))
-          --- items = order.items
           tr
-            td(rowspan=len(items)): strong Items
+            td.tlabel Items
             td
-              = items[0].Title
-              br
-              = model_display(items[0].model)
-
-          -for item in items[1:]
-            tr
-              td
-                = item.Title
-                br
-                = model_display(item.model)
+              ul
+                -for item in order.items
+                  li = item.Title
+              = model_display(', '.join(item.model for item in order.items))
 
     script src='http://code.jquery.com/jquery-3.1.0.slim.min.js'
     script
