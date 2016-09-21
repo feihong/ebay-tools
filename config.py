@@ -19,3 +19,10 @@ AWS_CREDENTIALS = dict(
     aws_access_key_id=aws[0],
     aws_secret_access_key=aws[1],
 )
+
+
+mg = MAILGUN_PARAMS.split(';')
+MAILGUN_CREDENTIALS = dict(
+    domain=mg[0],
+    private_key=mg[0],
+)
