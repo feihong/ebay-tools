@@ -14,6 +14,7 @@ class OrderRequest:
         self.credentials = credentials
 
     def get_orders(self):
+        "Return a sequence of orders awaiting shipment"
         api = Trading(config_file=None, **self.credentials)
         yesterday = arrow.utcnow().replace(hours=-24)
         nowish = arrow.utcnow().replace(minutes=-2)
@@ -46,6 +47,14 @@ class OrderRequest:
 
         print('%d orders created within the last 24 hours' % len(orders))
         print('%d orders awaiting shipment' % count)
+
+    def get_orders_detail(self):
+        "Return orders awaiting shipment, including item and address info."
+        orders = self.get_orders()
+        for order in orders:
+            order.items = list(self.get_items(order))
+            order.address = get_address(order)
+        return orders
 
     def get_items(self, order):
         for transaction in order.TransactionArray.Transaction:

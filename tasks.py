@@ -16,7 +16,7 @@ def generate_report(ctx, send_text=False):
 
     for user_id, cred in config.EBAY_CREDENTIALS:
         request = OrderRequest(cred)
-        orders = list(request.get_orders())
+        orders = request.get_orders_detail()
         orders.sort(key=lambda x: x.PaidTime, reverse=True)
 
         render_to_file(
