@@ -23,30 +23,16 @@ class OrderRequest:
             'CreateTimeTo': nowish,
         })
 
-        count = 0
         orders = response.reply.OrderArray.Order
         for order in orders:
             if not hasattr(order, 'PaidTime'):
                 continue
             if hasattr(order, 'ShippedTime'):
                 continue
-
-            count += 1
-            order.items = list(self.get_items(order))
-            order.address = get_address(order)
-            # print('Buyer: ' + order.BuyerUserID)
-            # print('Status: ' + order.OrderStatus)
-            # print('Paid %s on %s' % (order.AmountPaid.value, order.PaidTime))
-            # print('Items:')
-            # for item in get_items(order):
-            #     print('- %s => %s' % (item.Title, item.Model))
-            # print('Address:')
-            # print(get_address(order))
-            # print('='*80)
             yield order
 
-        print('%d orders created within the last 24 hours' % len(orders))
-        print('%d orders awaiting shipment' % count)
+        # print('%d orders created within the last 24 hours' % len(orders))
+        # print('%d orders awaiting shipment' % count)
 
     def get_orders_detail(self):
         "Return orders awaiting shipment, including item and address info."

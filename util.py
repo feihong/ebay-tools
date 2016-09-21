@@ -1,6 +1,7 @@
 from pathlib import Path
 from pprint import pprint
 
+import arrow
 import requests
 from mako.template import Template
 from mako.lookup import TemplateLookup
@@ -27,14 +28,14 @@ def render_to_file(output_file, template_file, **kwargs):
 
 
 def send_email(recipient, subject, body):
-    cred = config.MAILGUN_CREDENTIALS
-    url = 'https://api.mailgun.net/v3/{}/messages'.format(cred['domain'])
+    domain, private_key = config.MAILGUN_PARAMS.split(';')
+    url = 'https://api.mailgun.net/v3/{}/messages'.format(domain)
 
     resp = requests.post(
         url,
-        auth=('api', cred['private_key']),
+        auth=('api', private_key),
         data={
-            'from': 'Overlord <overlord@{}>'.format(domain),
+            'from': 'OrderMaster <overlord@{}>'.format(domain),
             'to': recipient,
             'subject': subject,
             'text': body,
@@ -43,7 +44,7 @@ def send_email(recipient, subject, body):
     print(resp.text)
 
 
-def send_text(number, message):
+def send_sms(number, message):
     access_key, secret_key = config.AWS_PARAMS.split(';')
     client = boto3.client(
         'sns',
@@ -61,3 +62,7 @@ def send_text(number, message):
         }
     )
     pprint(resp)
+
+
+def local_now():
+    return arrow.utcnow().to(config.TIME_ZONE)
