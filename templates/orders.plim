@@ -28,21 +28,21 @@ html lang='en'
           = row('Shipped?', 'Yes' if hasattr(order, 'ShippedTime') else 'No')
           = row('Buyer', order.BuyerUserID)
           = row('Amount paid', order.AmountPaid.value)
-          = row('Address', get_address(order).replace('\n', '<br>'))
-          --- items = list(get_items(order))
+          = row('Address', order.address.replace('\n', '<br>'))
+          --- items = order.items
           tr
             td(rowspan=len(items)): strong Items
             td
               = items[0].Title
               br
-              = model_display(items[0].Model)
+              = model_display(items[0].model)
 
           -for item in items[1:]
             tr
               td
                 = item.Title
                 br
-                = model_display(item.Model)
+                = model_display(item.model)
 
     script src='http://code.jquery.com/jquery-3.1.0.slim.min.js'
     script

@@ -13,15 +13,13 @@ lookup = TemplateLookup(
 
 
 def render(filename, **kwargs):
-    tmpl = lookup.get_template(filename)
-    # tmpl = Template(
-    #     filename=str(template_dir / filename), preprocessor=preprocessor)
+    tmpl = lookup.get_template(filename)    
     return tmpl.render(**kwargs)
 
 
-def render_to_file(output_file, filename, **kwargs):
+def render_to_file(output_file, template_file, **kwargs):
     with output_file.open('w') as fp:
-        fp.write(render(filename, **kwargs))
+        fp.write(render(template_file, **kwargs))
 
 
 def send_text(number, message):
