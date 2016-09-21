@@ -30,6 +30,7 @@ def generate_report(ctx):
 
 @task
 def send_email(ctx):
+    count = 0
     body = []
 
     for user_id, cred in config.EBAY_CREDENTIALS:
@@ -38,9 +39,13 @@ def send_email(ctx):
         line = '{user_id} has {count} orders awaiting shipment'.format(
             user_id=user_id, count=len(orders))
         body.append(line)
+        print(line)
+        count += len(orders)
 
-    util.send_email(
-        recipient=config.EMAIL_ADDRESS,
-        subject='Orders awaiting shipment - {:HH:mm}'.format(util.local_now()),
-        body='\n'.join(body),
-    )
+    if count > 0:
+        util.send_email(
+            recipient=config.EMAIL_ADDRESS,
+            subject='[{:HH:mm}] {} orders awaiting shipment'.format(
+                util.local_now(), count),
+            body='\n'.join(body),
+        )
