@@ -31,12 +31,9 @@ class OrderRequest:
                 continue
             yield order
 
-        # print('%d orders created within the last 24 hours' % len(orders))
-        # print('%d orders awaiting shipment' % count)
-
     def get_orders_detail(self):
         "Return orders awaiting shipment, including item and address info."
-        orders = self.get_orders()
+        orders = list(self.get_orders())
         for order in orders:
             order.items = list(self.get_items(order))
             order.address = get_address(order)

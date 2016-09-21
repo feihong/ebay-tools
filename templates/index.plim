@@ -6,6 +6,6 @@
 h1 = title()
 
 ul
-  -for user_id in user_ids:
+  -for user_id, count in user_ids:
     li
-      a href='${user_id}.html' = user_id
+      a href='${user_id}.html' ${user_id} (${count})
