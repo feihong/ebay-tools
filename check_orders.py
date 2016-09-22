@@ -25,8 +25,11 @@ class OrderRequest:
             'CreateTimeFrom': yesterday,
             'CreateTimeTo': nowish,
         })
+        try:
+            orders = response.reply.OrderArray.Order
+        except AttributeError:
+            orders = []
 
-        orders = response.reply.OrderArray.Order
         for order in orders:
             if not hasattr(order, 'PaidTime'):
                 continue
