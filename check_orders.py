@@ -10,6 +10,8 @@ import config
 
 
 SHIPPING_URL_TEMPLATE = 'https://payments.ebay.com/ws/eBayISAPI.dll?PrintPostage&transactionid={transaction_id}&ssPageName=STRK:MESO:PSHP&itemid={item_id}'
+SHIPPING_URL_TEMPLATE_2 = 'https://payments.ebay.com/ws/eBayISAPI.dll?PrintPostage&orderId={order_id}'
+
 
 
 class OrderRequest:
@@ -44,9 +46,14 @@ class OrderRequest:
             order.items = list(self.get_items(order))
             order.address = get_address(order)
 
-            item_id, transaction_id = order.OrderID.split('-')
-            order.shipping_url = SHIPPING_URL_TEMPLATE.format(
-                transaction_id=transaction_id, item_id=item_id)
+            if '-' in order.OrderID:
+                item_id, transaction_id = order.OrderID.split('-')
+                url = SHIPPING_URL_TEMPLATE.format(
+                    transaction_id=transaction_id, item_id=item_id)
+            else:
+                url = SHIPPING_URL_TEMPLATE_2.format(order_id=order.OrderID)
+            order.shipping_url = url
+
         return orders
 
     def get_items(self, order):
@@ -76,26 +83,3 @@ def get_address(order):
             '%s, %s %s' % (sa.CityName, sa.StateOrProvince, sa.PostalCode),
             sa.CountryName)
     return '\n'.join(line for line in addr if line is not None and line.strip())
-
-
-# if __name__ == '__main__':
-#     args = clint.arguments.Args()
-#
-#     orders = list(get_orders())
-#     if len(orders):
-#         if args.flags.contains('--send-text'):
-#             send_text(
-#                 config.SMS_NUMBER,
-#                 '{} orders awaiting shipment'.format(len(orders)))
-#
-#         tmpl_file = Path(__file__).parent / 'check_orders.plim'
-#         tmpl = Template(filename=str(tmpl_file), preprocessor=preprocessor)
-#
-#         orders.sort(key=lambda x: x.PaidTime, reverse=True)
-#         with open(config.REPORT_PATH, 'w') as fp:
-#             html = tmpl.render(
-#                 updated_time=arrow.utcnow().to(config.TIME_ZONE),
-#                 orders=orders,
-#                 get_items=get_items,
-#                 get_address=get_address)
-#             fp.write(html)

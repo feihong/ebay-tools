@@ -5,6 +5,8 @@
 
 h1 = title()
 
+p Updated at ${updated_time.format('YYYY-MM-DD HH:mm')}
+
 ul
   -for user_id, count in user_ids:
     li
