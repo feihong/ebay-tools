@@ -26,7 +26,11 @@ def generate_report(ctx):
             updated_time=util.local_now(),
             orders=orders)
 
-    util.render_to_file(report_dir / 'index.html', 'index.plim', user_ids=user_ids.items())
+    util.render_to_file(
+        report_dir / 'index.html',
+        'index.plim',
+        updated_time=util.local_now(),
+        user_ids=user_ids.items())
 
 @task
 def send_email(ctx):
