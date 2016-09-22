@@ -49,8 +49,9 @@ class OrderRequest:
     def get_items(self, order):
         for transaction in order.TransactionArray.Transaction:
             item = transaction.Item
-            item.model = self.get_model(item)
-            item.quantity = int(transaction.QuantityPurchased)
+            qty = int(transaction.QuantityPurchased)
+            item.model = self.get_model(item) + (' x%d' % qty if qty > 1 else '')
+            item.quantity = qty
             yield item
 
     def get_model(self, item):
