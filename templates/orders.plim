@@ -39,7 +39,10 @@ html lang='en'
             td
               ul
                 -for item in order.items
-                  li = item.Title
+                  li
+                    ${item.Title}
+                    -if item.quantity > 1
+                      (Quantity: ${item.quantity})
               = model_display(', '.join(item.model for item in order.items))
 
     script src='http://code.jquery.com/jquery-3.1.0.slim.min.js'

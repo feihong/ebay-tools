@@ -50,6 +50,7 @@ class OrderRequest:
         for transaction in order.TransactionArray.Transaction:
             item = transaction.Item
             item.model = self.get_model(item)
+            item.quantity = int(transaction.QuantityPurchased)
             yield item
 
     def get_model(self, item):
