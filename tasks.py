@@ -12,6 +12,7 @@ from check_orders import OrderRequest
 def generate_report(ctx):
     report_dir = Path(config.REPORT_DIR)
     user_ids = OrderedDict()
+    location_map = util.get_location_map()
 
     for user_id, cred in config.EBAY_CREDENTIALS:
         request = OrderRequest(cred)
@@ -24,7 +25,8 @@ def generate_report(ctx):
             'orders.plim',
             user_id=user_id,
             updated_time=util.local_now(),
-            orders=orders)
+            orders=orders,
+            location_map=location_map)
 
     util.render_to_file(
         report_dir / 'index.html',

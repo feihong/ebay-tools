@@ -1,3 +1,14 @@
+-python
+  def get_copy_text(items):
+    result = []
+    for item in items:
+      model = item.model
+      if item.quantity > 1:
+        model += ' x%d' % item.quantity
+      model += ' ' + location_map[item.model]
+      result.append(model)
+    return ', '.join(result)
+
 doctype html
 html lang='en'
   head
@@ -19,8 +30,8 @@ html lang='en'
         td.tlabel = label
         td = value
 
-    -def model_display(model)
-      input style='margin-right: 1em' readonly='' value=model
+    -def copy_display(items)
+      input style='margin-right: 1em' readonly='' value=${get_copy_text(items)}
       button.btn.btn-primary.btn-sm.copy Copy
 
     -for order in orders
@@ -43,7 +54,7 @@ html lang='en'
                     ${item.Title}
                     -if item.quantity > 1
                       (Quantity: ${item.quantity})
-              = model_display(', '.join(item.model for item in order.items))
+              = copy_display(order.items)
 
     script src='http://code.jquery.com/jquery-3.1.0.slim.min.js'
     script

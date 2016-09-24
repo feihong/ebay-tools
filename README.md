@@ -15,5 +15,5 @@ pip install -r requirements.txt
 Send an email reporting how many orders are awaiting shipping, every hour between 8 am and 10 pm.
 
 ```
-0 13-23,0-3 * * * source ~/.virtualenvs/ebay/bin/activate && cd ebay-tools && inv send_email
+0 13-23,0-3 * * * source ~/.virtualenvs/ebay/bin/activate && cd ~/ebay-tools && inv send_email
 ```

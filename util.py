@@ -11,7 +11,8 @@ import boto3
 import config
 
 
-template_dir = Path(__file__).parent / 'templates'
+here = Path(__file__).parent
+template_dir = here / 'templates'
 lookup = TemplateLookup(
     directories=[str(template_dir)],
     preprocessor=preprocessor)
@@ -66,3 +67,15 @@ def send_sms(number, message):
 
 def local_now():
     return arrow.utcnow().to(config.TIME_ZONE)
+
+
+def get_location_map():
+    import csv
+    result = {}
+
+    with (here / 'item_locations.csv').open() as fp:
+        for row in csv.DictReader(fp):
+            model, location = row['Model'].lower(), row['Location']
+            result[model] = location
+
+    return result
