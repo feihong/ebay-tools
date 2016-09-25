@@ -7,7 +7,19 @@ h1 = title()
 
 p Updated at ${updated_time.format('YYYY-MM-DD HH:mm')}
 
+h2 Orders
+
 ul
-  -for user_id, count in user_ids:
+  -for user_id, count in seller_order_counts.items():
     li
       a href='${user_id}.html' ${user_id} (${count})
+
+-python
+  pairs = [pair for pair in buyer_order_counts.items() if pair[1] > 1]
+
+-if len(pairs)
+  h2 Duplicate buyers
+
+  ul
+    -for buyer_user_id, count in buyer_order_counts.items()
+        li ${buyer_user_id}: ${count}
