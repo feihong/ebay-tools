@@ -21,5 +21,5 @@ ul
   h2 Duplicate buyers
 
   ul
-    -for buyer_user_id, count in buyer_order_counts.items()
+    -for buyer_user_id, count in pairs
         li ${buyer_user_id}: ${count}
