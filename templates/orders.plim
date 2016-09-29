@@ -33,7 +33,7 @@ html lang='en'
     link rel='stylesheet' href='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css' integrity='sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7' crossorigin='anonymous'
     style
       td.tlabel { font-weight: bold; }
-      span.addl-detail { color: gray; }
+      .addl-detail { color: gray; }
       input { margin-right: 1em; width: 15em; }
 
   body.container
@@ -53,8 +53,7 @@ html lang='en'
     -def additional_details(item)
       --- details = get_additional_details(item)
       -if details
-        br
-        span.addl-detail = details
+        div.addl-detail = details
 
     -for order in orders
       table.table.table-striped.table-bordered
