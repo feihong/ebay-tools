@@ -69,13 +69,13 @@ def local_now():
     return arrow.utcnow().to(config.TIME_ZONE)
 
 
-def get_location_map():
+def get_item_map():
     import csv
     result = {}
 
-    with (here / 'item_locations.csv').open() as fp:
+    with (here / 'ebay_items.csv').open() as fp:
         for row in csv.DictReader(fp):
-            model, location = row['Model'].lower(), row['Location']
-            result[model] = location
+            model = row['Model'].lower()
+            result[model] = row
 
     return result

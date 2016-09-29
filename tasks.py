@@ -12,7 +12,7 @@ from check_orders import OrderRequest
 @task
 def generate_report(ctx):
     report_dir = Path(config.REPORT_DIR)
-    location_map = util.get_location_map()
+    item_map = util.get_item_map()
     # Count the number of orders for each seller.
     seller_order_counts = OrderedDict()
     # Count the number of orders for each buyer.
@@ -22,7 +22,7 @@ def generate_report(ctx):
         request = OrderRequest(cred)
         orders = request.get_orders_detail()
         orders.sort(key=lambda x: x.PaidTime, reverse=True)
-        
+
         seller_order_counts[user_id] = len(orders)
         for order in orders:
             buyer_order_counts[order.BuyerUserID] += 1
@@ -33,7 +33,7 @@ def generate_report(ctx):
             user_id=user_id,
             updated_time=util.local_now(),
             orders=orders,
-            location_map=location_map)
+            item_map=item_map)
 
     util.render_to_file(
         report_dir / 'index.html',
