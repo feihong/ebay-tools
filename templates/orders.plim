@@ -5,7 +5,7 @@
     for item in items:
       model = item.model
       if item.quantity > 1:
-        model += ' x%d' % item.quantity
+        model = '%dx %s' % (item.quantity, model)
 
       item_dict = item_map[item.model]
       model += ' ' + item_dict['Location']
@@ -34,7 +34,8 @@ html lang='en'
     style
       td.tlabel { font-weight: bold; }
       .addl-detail { color: gray; }
-      input { margin-right: 1em; width: 15em; }
+      .highlight { background-color: moccasin; }
+      input { margin-right: 1em; width: 20em; }
 
   body.container
     h1 Orders awaiting shipment for ${user_id}
@@ -62,7 +63,6 @@ html lang='en'
             td.tlabel Order ID
             td
               a href=${order.shipping_url} target='_blank' = order.OrderID
-          / = row('Shipped?', 'Yes' if hasattr(order, 'ShippedTime') else 'No')
           = row('Buyer', order.BuyerUserID)
           = row('Amount paid', order.AmountPaid.value)
           = row('Address', order.address.replace('\n', '<br>'))
@@ -74,7 +74,8 @@ html lang='en'
                   li
                     ${item.Title}
                     -if item.quantity > 1
-                      (Quantity: ${item.quantity})
+                      span.highlight
+                        (Quantity: ${item.quantity})
                     = additional_details(item)
               = copy_display(order.items)
 
