@@ -7,14 +7,20 @@
       if item.quantity > 1:
         model = '%dx %s' % (item.quantity, model)
 
-      item_dict = item_map[item.model]
-      model += ' ' + item_dict['Location']
+      item_dict = item_map.get(item.model, None)
+      if item_dict is not None:
+        model += ' ' + item_dict['Location']
+      else:
+        model += ' ?'
       result.append(model)
     return ', '.join(result)
 
   def get_additional_details(item):
     "Return a string containing additional details for an item."
-    item_dict = item_map[item.model]
+    item_dict = item_map.get(item.model, None)
+    if item_dict is None:
+      return None
+
     keys = ('Domestic service', 'Intl service', 'Notes')
     details = ((k, item_dict[k]) for k in keys)
     details = [(k, v) for k, v in details if v.strip()]
