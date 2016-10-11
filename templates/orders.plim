@@ -21,7 +21,7 @@
     if item_dict is None:
       return None
 
-    keys = ('Domestic service', 'Intl service', 'Notes')
+    keys = ('Notes',)
     details = ((k, item_dict[k]) for k in keys)
     details = [(k, v) for k, v in details if v.strip()]
     if len(details):
