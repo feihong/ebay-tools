@@ -2,7 +2,7 @@
 REPORT_DIR = './report'
 REPORT_URL = ''
 TIME_ZONE = 'US/Central'
-
+GDRIVE_FOLDER = 'Shipping Label Inbox'
 
 from config_local import *
 

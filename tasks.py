@@ -42,6 +42,13 @@ def generate_report(ctx):
         seller_order_counts=seller_order_counts,
         buyer_order_counts=buyer_order_counts)
 
+
+@task
+def combine_pdfs(ctx):
+    import combine_pdfs
+    combine_pdfs.download_and_combine(config.GDRIVE_FOLDER)
+
+
 @task
 def send_email(ctx):
     count = 0
