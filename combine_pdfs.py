@@ -22,8 +22,10 @@ def download_and_combine(folder_title):
         print('No pdf files were downloaded')
         return
 
-    # Merge temp pdf files into a single pdf file.
-    output_filename = '{:%Y-%m-%d %H%M}.pdf'.format(datetime.datetime.now())
+    # Concatenate temp pdf files into a single pdf file.
+    output_filename = '{:%Y-%m-%d %H%M} ({}).pdf'.format(
+        datetime.datetime.now(), len(filenames))
+    print('Combining files into {}'.format(output_filename))
     cmd = [
         'gs', '-dBATCH', '-dNOPAUSE', '-q', '-sDEVICE=pdfwrite',
         '-sOutputFile=' + output_filename]
@@ -31,7 +33,7 @@ def download_and_combine(folder_title):
     subprocess.call(cmd)
 
     # Delete temp pdf files.
-    subprocess.call(['rm', '__temp-*.pdf'])
+    subprocess.call('rm __temp-*.pdf', shell=True)
 
 
 def get_drive():
