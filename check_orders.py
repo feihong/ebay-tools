@@ -21,10 +21,11 @@ class OrderRequest:
     def get_orders(self):
         "Return a sequence of orders awaiting shipment"
         api = Trading(config_file=None, **self.credentials)
-        yesterday = arrow.utcnow().replace(hours=-24)
+        few_days_ago = arrow.utcnow().replace(days=-5)
+        # The API doesn't like time values that it thinks are in the future.
         nowish = arrow.utcnow().replace(minutes=-2)
         response = api.execute('GetOrders', {
-            'CreateTimeFrom': yesterday,
+            'CreateTimeFrom': few_days_ago,
             'CreateTimeTo': nowish,
         })
         try:
