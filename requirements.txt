@@ -3,5 +3,6 @@ boto3
 clint
 ebaysdk
 Invoke
+oauth2client==3.0.0
 plim
 PyDrive
