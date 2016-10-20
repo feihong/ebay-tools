@@ -8,6 +8,8 @@ AWS_PARAMS = 'aws_access_key_id;aws_secret_access_key'
 
 MAILGUN_PARAMS = 'domain.com;privay_key'
 
+POSTMEN_PARAMS = 'api_key;shipper_id'
+
 EBAY_PARAMS = [
     ('user1', 'appid;devid;certid;token'),
     ('user2', 'appid;devid;certid;token'),

@@ -6,7 +6,7 @@ import arrow
 
 import config
 import util
-from check_orders import OrderRequest
+from orders import OrderRequest
 
 
 @task
@@ -76,3 +76,9 @@ def send_email(ctx):
 def show_users(ctx):
     for user_id, cred in config.EBAY_CREDENTIALS:
         print(user_id)
+
+
+@task
+def make_label(ctx, user, order_id):
+    import shipping_label
+    shipping_label.make_label(user, order_id)
