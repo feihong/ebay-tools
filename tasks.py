@@ -70,3 +70,9 @@ def send_email(ctx):
                 util.local_now(), count),
             body='\n'.join(body),
         )
+
+
+@task
+def show_users(ctx):
+    for user_id, cred in config.EBAY_CREDENTIALS:
+        print(user_id)
