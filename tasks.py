@@ -81,4 +81,5 @@ def show_users(ctx):
 @task
 def make_label(ctx, user, order_id):
     import shipping_label
-    shipping_label.make_label(user, order_id)
+    cred = [cred for user, cred in config.EBAY_CREDENTIALS][0]
+    shipping_label.make_label(cred, order_id)

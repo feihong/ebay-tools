@@ -14,3 +14,14 @@ EBAY_PARAMS = [
     ('user1', 'appid;devid;certid;token'),
     ('user2', 'appid;devid;certid;token'),
 ]
+
+SHIP_FROM = {
+    'contact_name': 'Poppy Luffy Esq.',
+    'phone': '312-744-7616',
+    'street1': '4455 N. Lincoln Ave.',
+    'city': 'Chicago',
+    'state': 'IL',
+    'postal_code': '60625',
+    'country': 'USA',
+    'type': 'residential'
+}

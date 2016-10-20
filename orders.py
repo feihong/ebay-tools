@@ -57,6 +57,13 @@ class OrderRequest:
 
         return orders
 
+    def get_order(self, order_id):
+        api = Trading(config_file=None, **self.credentials)
+        response = api.execute('GetOrders', {
+            'OrderIDArray': [{'OrderID': order_id}]
+        })
+        return response.reply.OrderArray.Order[0]
+
     def get_items(self, order):
         for transaction in order.TransactionArray.Transaction:
             item = transaction.Item
