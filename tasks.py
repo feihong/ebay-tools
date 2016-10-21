@@ -2,7 +2,7 @@ import json
 from pathlib import Path
 from collections import OrderedDict, defaultdict
 
-from invoke import task
+from invoke import task, run
 import arrow
 
 import config
@@ -111,4 +111,4 @@ def show_users(ctx):
 
 @task
 def web(ctx):
-    pass
+    run('muffin web run --bind=127.0.0.1:8000')

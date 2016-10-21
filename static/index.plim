@@ -1,0 +1,14 @@
+-inherit static/base.plim
+
+-block title
+  EBay Tools
+
+-block body
+  main.container
+    h1 = title()
+
+    ul
+      li
+        a href='/console/' Open console
+      li Download orders awaiting shipment
+      li View orders report

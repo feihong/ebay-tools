@@ -1,0 +1,11 @@
+-inherit static/base.plim
+
+-block title
+  Console
+
+-block body
+  header
+    h1 = title()
+
+  main.console
+    p hello
