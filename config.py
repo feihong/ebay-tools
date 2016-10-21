@@ -1,5 +1,5 @@
 # These values can be overridden in config_local.py
-REPORT_DIR = './report'
+ORDERS_DIR = './orders'
 REPORT_URL = ''
 TIME_ZONE = 'US/Central'
 GDRIVE_FOLDER = 'Shipping Label Inbox'

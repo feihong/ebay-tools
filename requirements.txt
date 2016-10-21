@@ -3,6 +3,7 @@ boto3
 clint
 ebaysdk
 Invoke
+muffin-playground
 oauth2client==3.0.0
 plim
 postmen

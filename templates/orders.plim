@@ -1,34 +1,3 @@
--python
-  def get_copy_text(items):
-    "Return text to be copied and pasted onto shipping label."
-    result = []
-    for item in items:
-      model = item.model
-      if item.quantity > 1:
-        model = '%dx %s' % (item.quantity, model)
-
-      item_dict = item_map.get(item.model, None)
-      if item_dict is not None:
-        model += ' ' + item_dict['Location']
-      else:
-        model += ' ?'
-      result.append(model)
-    return ', '.join(result)
-
-  def get_additional_details(item):
-    "Return a string containing additional details for an item."
-    item_dict = item_map.get(item.model, None)
-    if item_dict is None:
-      return None
-
-    keys = ('Notes',)
-    details = ((k, item_dict[k]) for k in keys)
-    details = [(k, v) for k, v in details if v.strip()]
-    if len(details):
-      return '; '.join('%s: %s' % (k, v) for k, v in details)
-    else:
-      return None
-
 doctype html
 html lang='en'
   head
@@ -54,11 +23,11 @@ html lang='en'
         td = value
 
     -def copy_display(items)
-      input readonly='' value=${get_copy_text(items)}
+      input readonly='' value=${util.get_copy_text(items, item_map)}
       button.btn.btn-primary.btn-sm.copy Copy
 
     -def additional_details(item)
-      --- details = get_additional_details(item)
+      --- details = util.get_additional_details(item, item_map)
       -if details
         div.addl-detail = details
 
@@ -68,22 +37,22 @@ html lang='en'
           tr
             td.tlabel Order ID
             td
-              a href=${order.shipping_url} target='_blank' = order.OrderID
-          = row('Buyer', order.BuyerUserID)
-          = row('Amount paid', order.AmountPaid.value)
-          = row('Address', order.address.replace('\n', '<br>'))
+              a href=${order['shipping_url']} target='_blank' = order['OrderID']
+          = row('Buyer', order['BuyerUserID'])
+          = row('Amount paid', order['AmountPaid']['value'])
+          = row('Address', order['address'].replace('\n', '<br>'))
           tr
             td.tlabel Items
             td
               ul
-                -for item in order.items
+                -for item in order['items']
                   li
-                    ${item.Title}
-                    -if item.quantity > 1
+                    ${item['Title']}
+                    -if item['quantity'] > 1
                       span.highlight
-                        (Quantity: ${item.quantity})
+                        (Quantity: ${item['quantity']})
                     = additional_details(item)
-              = copy_display(order.items)
+              = copy_display(order['items'])
 
     script src='http://code.jquery.com/jquery-3.1.0.slim.min.js'
     script

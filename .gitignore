@@ -1,6 +1,9 @@
 __pycache__
 config_local.py
-report/*.html
+
+orders/*.html
+orders/*.json
+
 ebay_items.csv
 service_account_key.json
 *.pdf

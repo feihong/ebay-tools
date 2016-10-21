@@ -1,3 +1,4 @@
+import json
 from pathlib import Path
 from collections import OrderedDict, defaultdict
 
@@ -6,37 +7,65 @@ import arrow
 
 import config
 import util
-from orders import OrderRequest
+import template_util
+
+
+@task
+def download_orders(ctx):
+    """
+    Download orders awaiting shipment.
+    """
+    import orders
+    orders_dir = Path(config.ORDERS_DIR)
+    result = {}
+
+    for user_id, cred in config.EBAY_CREDENTIALS:
+        request = orders.OrderRequest(cred)
+        result[user_id] = request.get_orders_detail()
+
+    with (orders_dir / 'orders.json').open('w') as fp:
+        json.dump(result, fp, indent=2)
 
 
 @task
 def generate_report(ctx):
-    report_dir = Path(config.REPORT_DIR)
+    """
+    Generate HTML report from downloaded orders data.
+    """
+    orders_dir = Path(config.ORDERS_DIR)
+    orders_file = orders_dir / 'orders.json'
+    if not orders_file.exists():
+        print('File {} was not found'.format(orders_file))
+        return
+
+    with orders_file.open() as fp:
+        orders_dict = json.load(fp)
+
+    # Get map of models -> location.
     item_map = util.get_item_map()
     # Count the number of orders for each seller.
     seller_order_counts = OrderedDict()
     # Count the number of orders for each buyer.
     buyer_order_counts = defaultdict(int)
 
-    for user_id, cred in config.EBAY_CREDENTIALS:
-        request = OrderRequest(cred)
-        orders = request.get_orders_detail()
-        orders.sort(key=lambda x: x.PaidTime, reverse=True)
-
+    for user_id, orders in orders_dict.items():
+        orders.sort(key=lambda x: x['PaidTime'])
         seller_order_counts[user_id] = len(orders)
         for order in orders:
-            buyer_order_counts[order.BuyerUserID] += 1
+            buyer_id = order['BuyerUserID']
+            buyer_order_counts[buyer_id] += 1
 
         util.render_to_file(
-            report_dir / (user_id + '.html'),
+            orders_dir / (user_id + '.html'),
             'orders.plim',
             user_id=user_id,
             updated_time=util.local_now(),
             orders=orders,
-            item_map=item_map)
+            item_map=item_map,
+            util=template_util)
 
     util.render_to_file(
-        report_dir / 'index.html',
+        orders_dir / 'index.html',
         'index.plim',
         updated_time=util.local_now(),
         seller_order_counts=seller_order_counts,
@@ -79,7 +108,5 @@ def show_users(ctx):
 
 
 @task
-def make_label(ctx, user, order_id):
-    import shipping_label
-    cred = [cred for user, cred in config.EBAY_CREDENTIALS][0]
-    shipping_label.make_label(cred, order_id)
+def web(ctx):
+    pass
