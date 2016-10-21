@@ -17,12 +17,13 @@ def download_orders(ctx):
     """
     import orders
     orders_dir = Path(config.ORDERS_DIR)
-    result = {}
+    result = {'content': {}}
 
     for user_id, cred in config.EBAY_CREDENTIALS:
         request = orders.OrderRequest(cred)
-        result[user_id] = request.get_orders_detail()
+        result['content'][user_id] = request.get_orders_detail()
 
+    result['download_time'] = arrow.utcnow().format()
     with (orders_dir / 'orders.json').open('w') as fp:
         json.dump(result, fp, indent=2)
 
@@ -39,7 +40,8 @@ def generate_report(ctx):
         return
 
     with orders_file.open() as fp:
-        orders_dict = json.load(fp)
+        download = json.load(fp)
+        download_time = arrow.get(download['download_time']).to(config.TIME_ZONE)
 
     # Get map of models -> location.
     item_map = util.get_item_map()
@@ -48,7 +50,7 @@ def generate_report(ctx):
     # Count the number of orders for each buyer.
     buyer_order_counts = defaultdict(int)
 
-    for user_id, orders in orders_dict.items():
+    for user_id, orders in download['content'].items():
         orders.sort(key=lambda x: x['PaidTime'])
         seller_order_counts[user_id] = len(orders)
         for order in orders:
@@ -59,7 +61,7 @@ def generate_report(ctx):
             orders_dir / (user_id + '.html'),
             'orders.plim',
             user_id=user_id,
-            updated_time=util.local_now(),
+            download_time=download_time,
             orders=orders,
             item_map=item_map,
             util=template_util)
@@ -67,7 +69,7 @@ def generate_report(ctx):
     util.render_to_file(
         orders_dir / 'index.html',
         'index.plim',
-        updated_time=util.local_now(),
+        download_time=download_time,
         seller_order_counts=seller_order_counts,
         buyer_order_counts=buyer_order_counts)
 

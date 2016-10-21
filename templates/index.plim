@@ -5,7 +5,7 @@
 
 h1 = title()
 
-p Updated at ${updated_time.format('YYYY-MM-DD HH:mm')}
+p Downloaded ${download_time.format('dddd, YYYY-MM-DD hh:mm A')}
 
 h2 Orders
 
