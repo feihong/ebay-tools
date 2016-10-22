@@ -27,6 +27,12 @@ async def status(request):
     return resp
 
 
+@app.register('/download-orders/')
+async def download_orders(request):
+    # app.loop.run_in_executor()
+    return 'ok'
+
+
 @app.on_shutdown.append
 async def on_shutdown(app):
     for socket in app.sockets:

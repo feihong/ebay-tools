@@ -16,16 +16,7 @@ def download_orders(ctx):
     Download orders awaiting shipment.
     """
     import orders
-    orders_dir = Path(config.ORDERS_DIR)
-    result = {'content': {}}
-
-    for user_id, cred in config.EBAY_CREDENTIALS:
-        request = orders.OrderRequest(cred)
-        result['content'][user_id] = request.get_orders_detail()
-
-    result['download_time'] = arrow.utcnow().format()
-    with (orders_dir / 'orders.json').open('w') as fp:
-        json.dump(result, fp, indent=2)
+    orders.download_orders()
 
 
 @task

@@ -2,6 +2,9 @@
 Check for orders that have been paid but have not been shipped.
 
 """
+from pathlib import Path
+import json
+
 import arrow
 from ebaysdk.trading import Connection as Trading
 from ebaysdk.shopping import Connection as Shopping
@@ -14,25 +17,19 @@ SHIPPING_URL_TEMPLATE_2 = 'https://payments.ebay.com/ws/eBayISAPI.dll?PrintPosta
 
 
 def download_orders():
-    orders_dir = Path(config.ORDER_DIR)
-    result = {}
+    """
+    Download orders awaiting shipment.
+    """
+    orders_dir = Path(config.ORDERS_DIR)
+    result = {'content': {}}
 
     for user_id, cred in config.EBAY_CREDENTIALS:
-        result['user_id']
         request = OrderRequest(cred)
-        orders = request.get_orders_detail()
+        result['content'][user_id] = request.get_orders_detail()
 
-        seller_order_counts[user_id] = len(orders)
-        for order in orders:
-            buyer_order_counts[order.BuyerUserID] += 1
-
-        util.render_to_file(
-            report_dir / (user_id + '.html'),
-            'orders.plim',
-            user_id=user_id,
-            updated_time=util.local_now(),
-            orders=orders,
-            item_map=item_map)
+    result['download_time'] = arrow.utcnow().format()
+    with (orders_dir / 'orders.json').open('w') as fp:
+        json.dump(result, fp, indent=2)
 
 
 class OrderRequest:
