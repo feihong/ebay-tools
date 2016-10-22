@@ -10,6 +10,7 @@ from ebaysdk.trading import Connection as Trading
 from ebaysdk.shopping import Connection as Shopping
 
 import config
+from logger import log
 
 
 SHIPPING_URL_TEMPLATE = 'https://payments.ebay.com/ws/eBayISAPI.dll?PrintPostage&transactionid={transaction_id}&ssPageName=STRK:MESO:PSHP&itemid={item_id}'
@@ -19,17 +20,23 @@ SHIPPING_URL_TEMPLATE_2 = 'https://payments.ebay.com/ws/eBayISAPI.dll?PrintPosta
 def download_orders():
     """
     Download orders awaiting shipment.
+
     """
-    orders_dir = Path(config.ORDERS_DIR)
+    order_count = 0
     result = {'content': {}}
 
     for user_id, cred in config.EBAY_CREDENTIALS:
         request = OrderRequest(cred)
-        result['content'][user_id] = request.get_orders_detail()
+        orders = request.get_orders_detail()
+        result['content'][user_id] = orders
+        order_count += len(orders)
 
     result['download_time'] = arrow.utcnow().format()
-    with (orders_dir / 'orders.json').open('w') as fp:
+
+    orders_file = Path(config.ORDERS_DIR) / 'orders.json'
+    with orders_file.open('w') as fp:
         json.dump(result, fp, indent=2)
+    log('Downloaded {} orders to {}'.format(order_count, orders_file))
 
 
 class OrderRequest:
@@ -57,6 +64,11 @@ class OrderRequest:
                 continue
             if 'ShippedTime' in order:
                 continue
+
+            log('{user}: {items}'.format(
+                user=order['BuyerUserID'],
+                items=get_items_text(order['items']))
+            )
             yield order
 
     def get_orders_detail(self):
@@ -84,6 +96,11 @@ class OrderRequest:
         return response.reply.OrderArray.Order[0]
 
 
+def get_items_text(items):
+    for item in items:
+        yield '{} ({})'.format(item['model'], item['quantity'])
+
+
 def get_items(order, cred):
     for transaction in order['TransactionArray']['Transaction']:
         item = transaction['Item']
@@ -103,6 +120,7 @@ def get_model(item_id, cred):
         if spec.Name == 'Model':
             return spec.Value
     return None
+
 
 def get_address(order):
     sa = order['ShippingAddress']

@@ -7,6 +7,8 @@ muffin web run
 import muffin
 from muffin_playground import Application
 
+from logger import log, WebLogger
+
 
 app = Application()
 app.task = None
@@ -29,8 +31,16 @@ async def status(request):
 
 @app.register('/download-orders/')
 async def download_orders(request):
-    # app.loop.run_in_executor()
+    import orders
+    # await app.loop.run_in_executor(orders.download_orders)    
+    for i in range(10):
+        log(i)
     return 'ok'
+
+
+@app.on_startup.append
+def on_startup(app):
+    log.web_logger = WebLogger(app.loop, app.sockets)
 
 
 @app.on_shutdown.append

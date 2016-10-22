@@ -1,0 +1,18 @@
+from wsclient import WsClient
+
+
+class MyClient(WsClient):
+    url = '/console/messages/'
+    auto_dispatch = True
+
+    def on_open(self, evt):
+        print('Websocket opened')
+
+    def on_close(self, evt):
+        print('Websocket closed')
+
+    def on_log(self, obj):
+        print(obj['value'])
+
+
+client = MyClient()
