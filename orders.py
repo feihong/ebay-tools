@@ -64,11 +64,6 @@ class OrderRequest:
                 continue
             if 'ShippedTime' in order:
                 continue
-
-            log('{user}: {items}'.format(
-                user=order['BuyerUserID'],
-                items=get_items_text(order['items']))
-            )
             yield order
 
     def get_orders_detail(self):
@@ -85,6 +80,11 @@ class OrderRequest:
             else:
                 url = SHIPPING_URL_TEMPLATE_2.format(order_id=order['OrderID'])
             order['shipping_url'] = url
+
+            log('{user}: {items}'.format(
+                user=order['BuyerUserID'],
+                items=', '.join(get_items_text(order['items'])))
+            )
 
         return orders
 
