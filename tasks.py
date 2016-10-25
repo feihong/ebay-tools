@@ -67,12 +67,21 @@ def generate_report(ctx):
 
 @task
 def combine_pdfs(ctx):
+    """
+    Download PDFs from "Shipping Label Inbox" GDrive folder and concatenate them
+    into a single PDF file.
+
+    """
     import combine_pdfs
     combine_pdfs.download_and_combine(config.GDRIVE_FOLDER)
 
 
 @task
 def send_email(ctx):
+    """
+    Send an email notifying you of the number of orders awaiting shipment.
+
+    """
     count = 0
     body = []
 
@@ -96,6 +105,10 @@ def send_email(ctx):
 
 @task
 def show_users(ctx):
+    """
+    Show all users from the config file.
+
+    """
     for user_id, cred in config.EBAY_CREDENTIALS:
         print(user_id)
 
