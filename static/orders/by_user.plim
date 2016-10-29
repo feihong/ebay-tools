@@ -20,10 +20,14 @@
       document.execCommand('copy')
     })
 
--def row(label, value)
-  tr
-    td.tlabel = label
-    td = value
+-def row(label, value, cls=None)
+  -if value is not None
+    tr
+      td.tlabel = label
+      -if cls
+        td class=cls = value
+      -else
+        td = value
 
 -def copy_display(items)
   input readonly='' value=${util.get_copy_text(items, item_map)}
@@ -48,7 +52,7 @@ main.container
           td
             a href=${order['shipping_url']} target='_blank' = order['OrderID']
         = row('Buyer', order['BuyerUserID'])
-        = row('Amount paid', order['AmountPaid']['value'])
+        = row('Buyer message', order.get('BuyerCheckoutMessage'), cls='highlight')
         = row('Address', order['address'].replace('\n', '<br>'))
         tr
           td.tlabel Items
