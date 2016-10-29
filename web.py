@@ -12,7 +12,7 @@ from muffin_playground import Application
 from logger import log, WebLogger
 
 
-app = Application(client_debug=False)
+app = Application(client_debug=True)
 app.task = None
 app.sockets = set()
 app.register_special_static_route(directory='static')
@@ -36,6 +36,11 @@ async def download_orders(request):
     import orders
     await app.loop.run_in_executor(None, orders.download_orders)
     return 'ok'
+
+
+@app.register('/orders/')
+def orders(request):
+    return app.render('static/orders/index.plim')
 
 
 @app.on_startup.append

@@ -1,0 +1,11 @@
+-inherit static/base.plim
+
+-block title
+  Orders awaiting shipment
+
+-block extrahead
+  link rel='stylesheet' href='styles.styl'
+
+-block body
+  main.container
+    h1 = title()
