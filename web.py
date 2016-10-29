@@ -12,6 +12,8 @@ import muffin
 from muffin_playground import Application
 
 from logger import log, WebLogger
+import util
+import template_util
 import config
 
 
@@ -67,8 +69,25 @@ def orders(request):
 
 @app.register('/orders/{user}/')
 def orders_for_user(request):
+    import orders
+    pkg = orders.load_orders()
     user = request.match_info.get('user')
-    return user
+
+    # Get map of models -> location.
+    item_map = util.get_item_map()
+
+    for user_, orders in pkg['content'].items():
+        if user == user_:
+            orders.sort(key=lambda x: x['PaidTime'])
+            break
+
+    return app.render(
+        'static/orders/by_user.plim',
+        download_time=pkg['download_time'],
+        user=user,
+        orders=orders,
+        item_map=item_map,
+        util=template_util)
 
 
 @app.on_startup.append

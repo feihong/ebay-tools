@@ -1,0 +1,64 @@
+-inherit static/base.plim
+
+-block title
+  Orders awaiting shipment for ${user}
+
+-block extrahead
+  style
+    td.tlabel { font-weight: bold; }
+    .addl-detail { color: gray; }
+    .highlight { background-color: moccasin; }
+    input { margin-right: 1em; width: 20em; }
+
+-block extrascript
+  script src='http://code.jquery.com/jquery-3.1.1.slim.min.js'
+  script
+    $('button.copy').on('click', function(evt) {
+      var input = $(this).prev('input')[0]
+      input.focus()
+      input.setSelectionRange(0, input.value.length)
+      document.execCommand('copy')
+    })
+
+-def row(label, value)
+  tr
+    td.tlabel = label
+    td = value
+
+-def copy_display(items)
+  input readonly='' value=${util.get_copy_text(items, item_map)}
+  button.btn.btn-primary.btn-sm.copy Copy
+
+-def additional_details(item)
+  --- details = util.get_additional_details(item, item_map)
+  -if details
+    div.addl-detail = details
+
+
+main.container
+  h1 = title()
+
+  p Downloaded ${download_time.format('dddd, YYYY-MM-DD hh:mm A')}
+
+  -for order in orders
+    table.table.table-striped.table-bordered
+      tbody
+        tr
+          td.tlabel Order ID
+          td
+            a href=${order['shipping_url']} target='_blank' = order['OrderID']
+        = row('Buyer', order['BuyerUserID'])
+        = row('Amount paid', order['AmountPaid']['value'])
+        = row('Address', order['address'].replace('\n', '<br>'))
+        tr
+          td.tlabel Items
+          td
+            ul
+              -for item in order['items']
+                li
+                  ${item['Title']}
+                  -if item['quantity'] > 1
+                    span.highlight
+                      (Quantity: ${item['quantity']})
+                  = additional_details(item)
+            = copy_display(order['items'])
