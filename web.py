@@ -12,7 +12,7 @@ from muffin_playground import Application
 from logger import log, WebLogger
 
 
-app = Application()
+app = Application(client_debug=False)
 app.task = None
 app.sockets = set()
 app.register_special_static_route(directory='static')
@@ -34,10 +34,7 @@ async def status(request):
 @app.register('/download-orders/')
 async def download_orders(request):
     import orders
-    # await app.loop.run_in_executor(orders.download_orders)
-    for i in range(20):
-        await asyncio.sleep(0.5)
-        log(i)
+    await app.loop.run_in_executor(None, orders.download_orders)
     return 'ok'
 
 
