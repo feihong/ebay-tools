@@ -1,3 +1,4 @@
+
 """
 To run:
 
@@ -5,11 +6,13 @@ muffin web run --bind=127.0.0.1:8000
 
 """
 import asyncio
+from collections import OrderedDict, defaultdict
 
 import muffin
 from muffin_playground import Application
 
 from logger import log, WebLogger
+import config
 
 
 app = Application(client_debug=True)
@@ -40,7 +43,26 @@ async def download_orders(request):
 
 @app.register('/orders/')
 def orders(request):
-    return app.render('static/orders/index.plim')
+    import orders
+    pkg = orders.load_orders()
+    
+    # Count the number of orders for each seller.
+    seller_order_counts = OrderedDict()
+    # Count the number of orders for each buyer.
+    buyer_order_counts = defaultdict(int)
+
+    for user_id, orders in pkg['content'].items():
+        orders.sort(key=lambda x: x['PaidTime'])
+        seller_order_counts[user_id] = len(orders)
+        for order in orders:
+            buyer_id = order['BuyerUserID']
+            buyer_order_counts[buyer_id] += 1
+
+    return app.render(
+        'static/orders/index.plim',
+        download_time=pkg['download_time'],
+        seller_order_counts=seller_order_counts,
+        buyer_order_counts=buyer_order_counts)
 
 
 @app.on_startup.append

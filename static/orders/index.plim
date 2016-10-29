@@ -6,6 +6,25 @@
 -block extrahead
   link rel='stylesheet' href='styles.styl'
 
--block body
-  main.container
-    h1 = title()
+
+main.container
+  h1 = title()
+
+  p Downloaded ${download_time.format('dddd, YYYY-MM-DD hh:mm A')}
+
+  h2 Orders by seller
+
+  ul
+    -for user_id, count in seller_order_counts.items():
+      li
+        a href='${user_id}.html' ${user_id} (${count})
+
+  -python
+    pairs = [pair for pair in buyer_order_counts.items() if pair[1] > 1]
+
+  -if len(pairs)
+    h2 Buyers with multiple orders
+
+    ul
+      -for buyer_user_id, count in pairs
+          li ${buyer_user_id}: ${count}

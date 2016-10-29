@@ -9,8 +9,7 @@
 -block extrascript
   script src='main.pyj'
 
--block body
-  header
-    h4 = title()
+header
+  h4 = title()
 
-  main.console
+main.console

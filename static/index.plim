@@ -9,16 +9,16 @@
 -block extrascript
   script src='main.pyj'
 
--block body
-  main.container
-    h1 = title()
 
-    div.status
+main.container
+  h1 = title()
 
-    ul
-      li
-        a href='/console/' target='_blank' Open console
-      li
-        a.download-orders href='#' Download orders awaiting shipment
-      li
-        a href='/orders/' View orders awaiting shipment
+  div.status
+
+  ul
+    li
+      a href='/console/' target='_blank' Open console
+    li
+      a.download-orders href='#' Download orders awaiting shipment
+    li
+      a href='/orders/' View orders awaiting shipment

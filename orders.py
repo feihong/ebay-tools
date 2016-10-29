@@ -39,6 +39,16 @@ def download_orders():
     log('Downloaded {} orders to {}'.format(order_count, orders_file))
 
 
+def load_orders():
+    orders_file = Path(config.ORDERS_DIR) / 'orders.json'
+    with orders_file.open() as fp:
+        result = json.load(fp)
+        # Convert download_time to a datetime object.
+        result['download_time'] = arrow.get(
+            result['download_time']).to(config.TIME_ZONE)
+        return result
+
+
 class OrderRequest:
     def __init__(self, credentials):
         self.credentials = credentials
