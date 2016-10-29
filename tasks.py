@@ -115,4 +115,8 @@ def show_users(ctx):
 
 @task
 def web(ctx):
+    """
+    Run the web app.
+
+    """
     run('muffin web run --bind=127.0.0.1:8000')

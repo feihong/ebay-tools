@@ -3,6 +3,9 @@
 -block title
   EBay Tools
 
+-block extrahead
+  link rel='stylesheet' href='styles.styl'
+
 -block extrascript
   script src='main.pyj'
 
@@ -10,9 +13,11 @@
   main.container
     h1 = title()
 
+    div.status
+
     ul
       li
-        a href='/console/' Open console
+        a href='/console/' target='_blank' Open console
       li
         a.download-orders href='#' Download orders awaiting shipment
       li View orders report

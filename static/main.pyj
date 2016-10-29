@@ -1,9 +1,10 @@
 jq = window.jQuery
 
 jq('a.download-orders').on('click', def(evt):
-  evt.preventDefault()
-  # window.open('/console/', 'console')
-  jq.get('/download-orders/', def(data):
-    print(data)
-  )
+    evt.preventDefault()
+    jq('.status').text('')
+    jq.get('/download-orders/', def(data):
+        if data == 'ok':
+            jq('.status').text('download-orders finished')
+    )
 )

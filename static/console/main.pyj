@@ -1,4 +1,5 @@
 from wsclient import WsClient
+jq = window.jQuery
 
 
 class MyClient(WsClient):
@@ -13,6 +14,7 @@ class MyClient(WsClient):
 
     def on_log(self, obj):
         print(obj['value'])
+        jq('<p>').text(obj['value']).appendTo('.console')
 
 
 client = MyClient()

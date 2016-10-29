@@ -1,7 +1,7 @@
 """
 To run:
 
-muffin web run
+muffin web run --bind=127.0.0.1:8000
 
 """
 import muffin
@@ -32,7 +32,7 @@ async def status(request):
 @app.register('/download-orders/')
 async def download_orders(request):
     import orders
-    # await app.loop.run_in_executor(orders.download_orders)    
+    # await app.loop.run_in_executor(orders.download_orders)
     for i in range(10):
         log(i)
     return 'ok'
