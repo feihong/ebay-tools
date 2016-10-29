@@ -17,7 +17,7 @@ main.container
   ul
     -for user_id, count in seller_order_counts.items():
       li
-        a href='${user_id}.html' ${user_id} (${count})
+        a href='${user_id}/' ${user_id} (${count})
 
   -python
     pairs = [pair for pair in buyer_order_counts.items() if pair[1] > 1]

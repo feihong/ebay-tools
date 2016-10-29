@@ -45,7 +45,7 @@ async def download_orders(request):
 def orders(request):
     import orders
     pkg = orders.load_orders()
-    
+
     # Count the number of orders for each seller.
     seller_order_counts = OrderedDict()
     # Count the number of orders for each buyer.
@@ -63,6 +63,12 @@ def orders(request):
         download_time=pkg['download_time'],
         seller_order_counts=seller_order_counts,
         buyer_order_counts=buyer_order_counts)
+
+
+@app.register('/orders/{user}/')
+def orders_for_user(request):
+    user = request.match_info.get('user')
+    return user
 
 
 @app.on_startup.append
