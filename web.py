@@ -4,6 +4,8 @@ To run:
 muffin web run --bind=127.0.0.1:8000
 
 """
+import asyncio
+
 import muffin
 from muffin_playground import Application
 
@@ -33,7 +35,8 @@ async def status(request):
 async def download_orders(request):
     import orders
     # await app.loop.run_in_executor(orders.download_orders)
-    for i in range(10):
+    for i in range(20):
+        await asyncio.sleep(0.5)
         log(i)
     return 'ok'
 

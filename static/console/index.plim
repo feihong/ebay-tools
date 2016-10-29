@@ -3,12 +3,14 @@
 -block title
   Console
 
-  -block extrascript
-    script src='main.pyj'
+-block extrahead
+  link rel='stylesheet' href='styles.styl'
+
+-block extrascript
+  script src='main.pyj'
 
 -block body
   header
-    h1 = title()
+    h4 = title()
 
   main.console
-    p hello

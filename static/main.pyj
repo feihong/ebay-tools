@@ -2,7 +2,7 @@ jq = window.jQuery
 
 jq('a.download-orders').on('click', def(evt):
     evt.preventDefault()
-    jq('.status').text('')
+    jq('.status').text('download-orders started')
     jq.get('/download-orders/', def(data):
         if data == 'ok':
             jq('.status').text('download-orders finished')

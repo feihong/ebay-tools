@@ -14,7 +14,9 @@ class MyClient(WsClient):
 
     def on_log(self, obj):
         print(obj['value'])
-        jq('<p>').text(obj['value']).appendTo('.console')
+        console = jq('.console')
+        para = jq('<p>').text(obj['value']).appendTo(console)
+        console.scrollTop(para.offset().top - console.offset().top + console.scrollTop())
 
 
 client = MyClient()
