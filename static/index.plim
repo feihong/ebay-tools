@@ -7,6 +7,8 @@
   link rel='stylesheet' href='styles.styl'
 
 -block extrascript
+  script src='/scripts/jsfx.js'
+  script src='/scripts/sound_effects.pyj'
   script src='main.pyj'
 
 

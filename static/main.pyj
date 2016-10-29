@@ -1,4 +1,6 @@
 jq = window.jQuery
+sfx = window.sfx
+
 
 jq('a.download-orders').on('click', def(evt):
     evt.preventDefault()
@@ -6,5 +8,6 @@ jq('a.download-orders').on('click', def(evt):
     jq.get('/download-orders/', def(data):
         if data == 'ok':
             jq('.status').text('download-orders finished')
+            sfx.success()
     )
 )

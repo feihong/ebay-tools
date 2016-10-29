@@ -17,7 +17,7 @@ import template_util
 import config
 
 
-app = Application(client_debug=True)
+app = Application(client_debug=False)
 app.task = None
 app.sockets = set()
 app.register_special_static_route(directory='static')
