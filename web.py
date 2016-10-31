@@ -18,7 +18,7 @@ import config
 
 
 app = Application(client_debug=False)
-app.task = None
+app.future = None      # only allow one command at a time to run.
 app.sockets = set()
 app.register_special_static_route(directory='static')
 
@@ -39,8 +39,12 @@ async def status(request):
 @app.register('/download-orders/')
 async def download_orders(request):
     import orders
-    await app.loop.run_in_executor(None, orders.download_orders)
-    return 'ok'
+    future = run_command(orders.download_orders)
+    if future:
+        await future
+        return 'ok'
+    else:
+        return 'busy'
 
 
 @app.register('/orders/')
@@ -99,3 +103,21 @@ def on_startup(app):
 async def on_shutdown(app):
     for socket in app.sockets:
         await socket.close()
+
+
+def run_command(func):
+    """
+    Run a command if no other command is currently running.
+
+    """
+    if app.future is None:
+        future = app.loop.run_in_executor(None, func)
+
+        def on_done(future):
+            app.future = None
+        future.add_done_callback(on_done)
+
+        app.future = future
+        return future
+    else:
+        return None

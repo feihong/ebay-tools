@@ -9,5 +9,7 @@ jq('a.download-orders').on('click', def(evt):
         if data == 'ok':
             jq('.status').text('download-orders finished')
             sfx.success()
+        elif data == 'busy':
+            jq('.status').text('A command is still running')
     )
 )

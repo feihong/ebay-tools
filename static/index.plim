@@ -19,7 +19,7 @@ main.container
 
   ul
     li
-      a href='/console/' target='_blank' Open console
+      a href='/console/' target='_blank' Open console in another tab
     li
       a.download-orders href='#' Download orders awaiting shipment
     li
