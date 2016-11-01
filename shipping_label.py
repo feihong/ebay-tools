@@ -36,7 +36,7 @@ def get_images(pdf_file):
                     mode = "P"
 
                 encoding = xObject[obj]['/Filter']
-                if encoding == '/FlateDecode':
+                if encoding == '/FlateDecode' or '/FlateDecode' in encoding:
                     yield Image.frombytes(mode, size, data)
                 else:
                     raise Exception(
@@ -47,7 +47,7 @@ def get_image_page(image):
     inch = 72
     bio = BytesIO()
     c = Canvas(bio, pagesize=(8.5*inch, 11*inch))
-    dim = c.drawImage(image, inch, 5.5*inch, 6*inch, 4*inch)
+    dim = c.drawImage(image, 0.5*inch, 6.3*inch, 495, 290)
     # print(dim)
     c.save()
     return PdfFileReader(bio).getPage(0)
