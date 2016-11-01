@@ -6,6 +6,7 @@ Invoke
 muffin-playground
 oauth2client==3.0.0
 plim
-postmen
 pycountry
 PyDrive
+PyPDF2
+reportlab

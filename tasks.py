@@ -104,6 +104,16 @@ def send_email(ctx):
 
 
 @task
+def process_return_label(ctx, pdf_file):
+    """
+    Strip all unecessary data from return shipping label.
+
+    """
+    import shipping_label
+    shipping_label.process_return_label(pdf_file)
+
+
+@task
 def show_users(ctx):
     """
     Show all users from the config file.
