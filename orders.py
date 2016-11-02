@@ -56,18 +56,24 @@ class OrderRequest:
     def get_orders(self):
         "Return a sequence of orders awaiting shipment"
         api = Trading(config_file=None, **self.credentials)
-        few_days_ago = arrow.utcnow().replace(days=-5)
+        days_back = 7
+        start = arrow.utcnow().replace(days=-days_back)
         # The API doesn't like time values that it thinks are in the future.
-        nowish = arrow.utcnow().replace(minutes=-2)
+        end = arrow.utcnow().replace(minutes=-2)
         response = api.execute('GetOrders', {
-            'CreateTimeFrom': few_days_ago,
-            'CreateTimeTo': nowish,
+            'CreateTimeFrom': start,
+            'CreateTimeTo': end,
+            'SortingOrder': 'Descending',
+            'OrderStatus': 'Completed',
         })
         try:
             # orders = response.reply.OrderArray.Order
             orders = response.dict()['OrderArray']['Order']
         except AttributeError:
             orders = ()
+
+        log('Downloaded {} total orders for past {} days'.format(
+            len(orders), days_back))
 
         for order in orders:
             if 'PaidTime' not in order:
