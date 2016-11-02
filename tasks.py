@@ -77,6 +77,17 @@ def combine_pdfs(ctx):
 
 
 @task
+def combine_pdfs_for_print(ctx):
+    """
+    Download PDFs from "Shipping Label Inbox" GDrive folder and combine them
+    into a single PDF file, with 2 labels per page.
+
+    """
+    import combine_pdfs
+    combine_pdfs.combine_for_print(config.GDRIVE_FOLDER)
+
+
+@task
 def send_email(ctx):
     """
     Send an email notifying you of the number of orders awaiting shipment.

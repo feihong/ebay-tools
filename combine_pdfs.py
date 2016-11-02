@@ -1,10 +1,48 @@
 import datetime
 import subprocess
+from pathlib import Path
 
 import httplib2
 from oauth2client.service_account import ServiceAccountCredentials
 from pydrive.auth import GoogleAuth
 from pydrive.drive import GoogleDrive
+
+
+def combine_for_print(folder_title):
+    drive = get_drive()
+    filenames = []
+
+    # Download all pdf files from GDrive.
+    for i, fil in enumerate(get_pdf_files(drive, folder_title), 1):
+        print(fil['title'])
+        filename = '__temp-{}.pdf'.format(i)
+        fil.GetContentFile(filename)
+        filenames.append(filename)
+
+    if not len(filenames):
+        print('No pdf files were downloaded')
+        return
+
+    # Compute output name by using date and number of files.
+    output_filename = '{:%Y-%m-%d %H%M} ({}).pdf'.format(
+        datetime.datetime.now(), len(filenames))
+    print('Combining files into {}'.format(output_filename))
+
+    writer = PdfFileWriter()
+
+    for i, filename in enumerate(filenames):
+        reader = PdfFileReader(open(filename, 'rb'), strict=False)
+        if (i % 2) == 0:    # if even page
+            page = reader.getPage(0)
+            writer.addPage(page)
+        else:
+            page.mergeTranslatedPage(reader.getPage(0), 0, -5*inch)
+
+    with open(output_filename, 'wb') as fp:
+        writer.write(fp)
+
+    # Delete temp pdf files.
+    subprocess.call('rm __temp-*.pdf', shell=True)
 
 
 def download_and_combine(folder_title):
