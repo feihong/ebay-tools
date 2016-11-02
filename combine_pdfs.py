@@ -6,6 +6,10 @@ import httplib2
 from oauth2client.service_account import ServiceAccountCredentials
 from pydrive.auth import GoogleAuth
 from pydrive.drive import GoogleDrive
+from PyPDF2 import PdfFileWriter, PdfFileReader
+
+
+inch = 72
 
 
 def combine_for_print(folder_title):
