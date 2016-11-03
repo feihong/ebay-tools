@@ -40,7 +40,7 @@ def combine_for_print(folder_title):
             page = reader.getPage(0)
             writer.addPage(page)
         else:
-            page.mergeTranslatedPage(reader.getPage(0), 0, -5*inch)
+            page.mergeTranslatedPage(reader.getPage(0), 0, -5.3*inch)
 
     with open(output_filename, 'wb') as fp:
         writer.write(fp)
