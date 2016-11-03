@@ -54,6 +54,7 @@ main.container
         = row('Buyer', order['BuyerUserID'])
         = row('Buyer message', order.get('BuyerCheckoutMessage'), cls='highlight')
         = row('Address', order['address'].replace('\n', '<br>'))
+        = row('Paid time', order['PaidTime'].format('ddd, hh:mm A'))
         tr
           td.tlabel Items
           td

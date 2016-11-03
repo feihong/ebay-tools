@@ -69,6 +69,10 @@ def local_now():
     return arrow.utcnow().to(config.TIME_ZONE)
 
 
+def str_to_local_time(text):
+    return arrow.get(text).to(config.TIME_ZONE)
+
+
 def get_item_map():
     import csv
     result = {}

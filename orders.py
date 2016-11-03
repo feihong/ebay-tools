@@ -10,6 +10,7 @@ from ebaysdk.trading import Connection as Trading
 from ebaysdk.shopping import Connection as Shopping
 
 import config
+import util
 from logger import log
 
 
@@ -44,8 +45,12 @@ def load_orders():
     with orders_file.open() as fp:
         result = json.load(fp)
         # Convert download_time to a datetime object.
-        result['download_time'] = arrow.get(
-            result['download_time']).to(config.TIME_ZONE)
+        result['download_time'] = util.str_to_local_time(result['download_time'])
+
+        for user_, orders in result['content'].items():
+            for order in orders:
+                order['PaidTime'] = util.str_to_local_time(order['PaidTime'])
+
         return result
 
 
@@ -63,7 +68,7 @@ class OrderRequest:
         response = api.execute('GetOrders', {
             'CreateTimeFrom': start,
             'CreateTimeTo': end,
-            'SortingOrder': 'Descending',
+            'SortingOrder': 'Ascending',
             'OrderStatus': 'Completed',
         })
         try:
