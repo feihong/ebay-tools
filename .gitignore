@@ -6,5 +6,6 @@ orders/*.html
 orders/*.json
 
 ebay_items.csv
+item_model.csv
 service_account_key.json
 *.pdf

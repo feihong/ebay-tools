@@ -125,6 +125,16 @@ def process_return_label(ctx, pdf_file):
 
 
 @task
+def download_item_model_data(ctx):
+    """
+    Download item's model data to item_model.csv.
+
+    """
+    import items
+    items.download_item_model_data('item_model.csv')
+
+
+@task
 def show_users(ctx):
     """
     Show all users from the config file.
