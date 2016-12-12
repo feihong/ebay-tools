@@ -74,7 +74,7 @@ class OrderRequest:
             rdict = response.dict()
             if 'OrderArray' in rdict:
                 orders = rdict['OrderArray']['Order']
-            except AttributeError:
+            else:
                 orders = ()
 
             for order in orders:

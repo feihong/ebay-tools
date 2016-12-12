@@ -67,3 +67,7 @@ main.container
                       (Quantity: ${item['quantity']})
                   = additional_details(item)
             = copy_display(order['items'])
+
+    hr
+
+    a target='_blank' href='http://k2b-bulk.ebay.com/ws/eBayISAPI.dll?SalesRecordConsole&status=WaitPayment&currentPage=SCSold&ssPageName=STRK:ME:LNLK' Orders awaiting payment on eBay
