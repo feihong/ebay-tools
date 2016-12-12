@@ -4,6 +4,7 @@ Check for orders that have been paid but have not been shipped.
 """
 from pathlib import Path
 import json
+import itertools
 
 import arrow
 from ebaysdk.trading import Connection as Trading
@@ -16,6 +17,7 @@ from logger import log
 
 SHIPPING_URL_TEMPLATE = 'https://payments.ebay.com/ws/eBayISAPI.dll?PrintPostage&transactionid={transaction_id}&ssPageName=STRK:MESO:PSHP&itemid={item_id}'
 SHIPPING_URL_TEMPLATE_2 = 'https://payments.ebay.com/ws/eBayISAPI.dll?PrintPostage&orderId={order_id}'
+DAYS_BACK = 10
 
 
 def download_orders():
@@ -57,35 +59,35 @@ def load_orders():
 class OrderRequest:
     def __init__(self, credentials):
         self.credentials = credentials
+        self.api = Trading(config_file=None, **self.credentials)
 
     def get_orders(self):
-        "Return a sequence of orders awaiting shipment"
-        api = Trading(config_file=None, **self.credentials)
-        days_back = 7
-        start = arrow.utcnow().replace(days=-days_back)
+        self.start = arrow.utcnow().replace(days=-DAYS_BACK)
         # The API doesn't like time values that it thinks are in the future.
-        end = arrow.utcnow().replace(minutes=-2)
-        response = api.execute('GetOrders', {
-            'CreateTimeFrom': start,
-            'CreateTimeTo': end,
-            'SortingOrder': 'Ascending',
-            'OrderStatus': 'Completed',
-        })
-        try:
-            # orders = response.reply.OrderArray.Order
-            orders = response.dict()['OrderArray']['Order']
-        except AttributeError:
-            orders = ()
+        self.end = arrow.utcnow().replace(minutes=-2)
 
-        log('Downloaded {} total orders for past {} days'.format(
-            len(orders), days_back))
+        for page in itertools.count(1):
+            response = self._get_orders_for_page(page)
+            reply = response.reply
+            print('Page {}, {} items'.format(page, reply.ReturnedOrderCountActual))
 
-        for order in orders:
-            if 'PaidTime' not in order:
-                continue
-            if 'ShippedTime' in order:
-                continue
-            yield order
+            rdict = response.dict()
+            if 'OrderArray' in rdict:
+                orders = rdict['OrderArray']['Order']
+            except AttributeError:
+                orders = ()
+
+            for order in orders:
+                # Ignore orders that haven't been paid.
+                if 'PaidTime' not in order:
+                    continue
+                # Ignore orders that have already shipped.
+                if 'ShippedTime' in order:
+                    continue
+                yield order
+
+            if reply.PageNumber == reply.PaginationResult.TotalNumberOfPages:
+                break
 
     def get_orders_detail(self):
         "Return orders awaiting shipment, including item and address info."
@@ -115,6 +117,26 @@ class OrderRequest:
             'OrderIDArray': [{'OrderID': order_id}]
         })
         return response.reply.OrderArray.Order[0]
+
+    def _get_orders_for_page(self, page):
+        """
+        Return the response object for a single page.
+
+        """
+        response = self.api.execute('GetOrders', {
+            'CreateTimeFrom': self.start,
+            'CreateTimeTo': self.end,
+            'OrderStatus': 'Completed',
+            'Pagination': {
+                'PageNumber': page,
+                'EntriesPerPage': 100,
+            }
+        })
+        if page == 1:
+            pagination = response.reply.PaginationResult
+            print('Found {} orders over {} pages'.format(
+                pagination.TotalNumberOfEntries, pagination.TotalNumberOfPages))
+        return response
 
 
 def get_items_text(items):
