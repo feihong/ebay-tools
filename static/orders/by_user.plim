@@ -9,6 +9,7 @@
     .addl-detail { color: gray; }
     .highlight { background-color: moccasin; }
     input { margin-right: 1em; width: 20em; }
+    .awaiting-payment { font-size: 2rem; margin-bottom: 8rem; }
 
 -block extrascript
   script src='http://code.jquery.com/jquery-3.1.1.slim.min.js'
@@ -68,6 +69,8 @@ main.container
                   = additional_details(item)
             = copy_display(order['items'])
 
-    hr
-
-    a target='_blank' href='http://k2b-bulk.ebay.com/ws/eBayISAPI.dll?SalesRecordConsole&status=WaitPayment&currentPage=SCSold&ssPageName=STRK:ME:LNLK' Orders awaiting payment on eBay
+  div.awaiting-payment
+    a target='_blank' href='http://k2b-bulk.ebay.com/ws/eBayISAPI.dll?SalesRecordConsole&status=WaitPayment&currentPage=SCSold&ssPageName=STRK:ME:LNLK'
+      span.glyphicon.glyphicon-hand-right
+      &nbsp;
+      Orders awaiting payment on eBay
