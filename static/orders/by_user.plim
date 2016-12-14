@@ -9,7 +9,8 @@
     .addl-detail { color: gray; }
     .highlight { background-color: moccasin; }
     input { margin-right: 1em; width: 20em; }
-    .awaiting-shipment { font-size: 2rem; margin-bottom: 8rem; }
+    .awaiting-shipment, .shipping-labels { font-size: 2rem; }
+    .shipping-labels { margin-bottom: 8rem; }
 
 -block extrascript
   script src='http://code.jquery.com/jquery-3.1.1.slim.min.js'
@@ -74,3 +75,9 @@ main.container
       span.glyphicon.glyphicon-hand-right
       &nbsp;
       Orders awaiting shipment on eBay
+
+  div.shipping-labels
+    a target='_blank' href='http://my.ebay.com/ws/eBayISAPI.dll?MyEbayBeta&CurrentPage=ShippingLabelMgmt&ssPageName=STRK:ME:LNLK:MELMGMTS'
+      span.glyphicon.glyphicon-hand-right
+      &nbsp;
+      Shipping labels
