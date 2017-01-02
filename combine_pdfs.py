@@ -1,6 +1,7 @@
 import datetime
 import subprocess
 from pathlib import Path
+import re
 
 import httplib2
 from oauth2client.service_account import ServiceAccountCredentials
@@ -52,12 +53,16 @@ def combine_for_print(folder_title):
 def download_and_combine(folder_title):
     drive = get_drive()
     filenames = []
+    label_count = 0
 
     # Download all pdf files from GDrive.
-    for i, fil in enumerate(get_pdf_files(drive, folder_title), 1):
-        print(fil['title'])
+    for i, file_ in enumerate(get_pdf_files(drive, folder_title), 1):
+        title = file_['title']
+        print(title)
+        count = re.match(r'^(\d+) labels', title).group(1)
+        label_count += int(count)
         filename = '__temp-{}.pdf'.format(i)
-        fil.GetContentFile(filename)
+        file_.GetContentFile(filename)
         filenames.append(filename)
 
     if not len(filenames):
@@ -66,7 +71,7 @@ def download_and_combine(folder_title):
 
     # Concatenate temp pdf files into a single pdf file.
     output_filename = '{:%Y-%m-%d %H%M} ({}).pdf'.format(
-        datetime.datetime.now(), len(filenames))
+        datetime.datetime.now(), label_count)
     print('Combining files into {}'.format(output_filename))
     cmd = [
         'gs', '-dBATCH', '-dNOPAUSE', '-q', '-sDEVICE=pdfwrite',
@@ -94,6 +99,7 @@ def get_pdf_files(drive, folder_title):
     directory = drive.ListFile({'q': query}).GetList()[0]
     dir_id = directory['id']
 
+    # Retrieve all pdf files inside the given folder.
     query = "'{}' in parents and trashed = false and mimeType = 'application/pdf'".format(dir_id)
     file_list = drive.ListFile({'q': query, 'orderBy': 'modifiedDate'}).GetList()
     for fil in file_list:
