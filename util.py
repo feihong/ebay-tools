@@ -1,5 +1,6 @@
 from pathlib import Path
 from pprint import pprint
+import csv
 
 import arrow
 import requests
@@ -74,7 +75,6 @@ def str_to_local_time(text):
 
 
 def get_item_map():
-    import csv
     result = {}
 
     with (here / 'ebay_items.csv').open() as fp:
@@ -83,3 +83,19 @@ def get_item_map():
             result[model] = row
 
     return result
+
+
+def get_item_model_map():
+    result = {}
+    with (here / 'item_model.csv').open() as fp:
+        for row in csv.DictReader(fp):
+            item_id = row['item_id']
+            result[item_id] = row['model']
+    return result
+
+
+item_model_map = get_item_model_map()
+
+
+def get_model_for_item(item_id):
+    return item_model_map.get(item_id)

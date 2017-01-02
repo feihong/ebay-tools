@@ -81,9 +81,17 @@ class OrderRequest:
                 # Ignore orders that haven't been paid.
                 if 'PaidTime' not in order:
                     continue
+
+                # Ignore orders that haven't shipped or were shipped more than
+                # a day ago.
+                # shipped_time = order.get('ShippedTime')
+                # if not shipped_time or hours_since(shipped_time) > 24:
+                #     continue
+
                 # Ignore orders that have already shipped.
                 if 'ShippedTime' in order:
                     continue
+
                 yield order
 
             if reply.PageNumber == reply.PaginationResult.TotalNumberOfPages:
@@ -153,16 +161,17 @@ def get_items(order, cred):
 
 
 def get_model(item_id, cred):
-    api = Shopping(config_file=None, **cred)
-    response = api.execute('GetSingleItem', {
-        'ItemID': item_id,
-        'IncludeSelector': 'ItemSpecifics'
-    })
-    item_specifics = response.reply.Item.ItemSpecifics.NameValueList
-    for spec in item_specifics:
-        if spec.Name == 'Model':
-            return spec.Value
-    return None
+    # api = Shopping(config_file=None, **cred)
+    # response = api.execute('GetSingleItem', {
+    #     'ItemID': item_id,
+    #     'IncludeSelector': 'ItemSpecifics'
+    # })
+    # item_specifics = response.reply.Item.ItemSpecifics.NameValueList
+    # for spec in item_specifics:
+    #     if spec.Name == 'Model':
+    #         return spec.Value
+    # return None
+    return util.get_model_for_item(item_id)
 
 
 def get_address(order):
@@ -174,3 +183,11 @@ def get_address(order):
         '%s, %s %s' % (sa['CityName'], sa['StateOrProvince'], sa['PostalCode']),
         sa['CountryName'])
     return '\n'.join(line for line in addr if line is not None and line.strip())
+
+
+def hours_since(dt):
+    "Return the number of hours since given datetime"
+    if isinstance(dt, str):
+        dt = arrow.get(dt)
+    delta = arrow.utcnow() - dt
+    return delta.total_seconds() / 3600
