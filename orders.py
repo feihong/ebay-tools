@@ -42,6 +42,25 @@ def download_orders():
     log('Downloaded {} orders to {}'.format(order_count, orders_file))
 
 
+def download_shipped_orders(output_file):
+    """
+    Download orders whose shipping labels have been printed.
+
+    """
+    result = []
+
+    for user_id, cred in config.EBAY_CREDENTIALS:
+        request = OrderRequest(cred)
+        orders = list(request.get_shipped_orders())
+        for order in orders:
+            order['items'] = list(request.get_items(order))
+        result.extend(orders)
+
+    orders_file = Path(config.ORDERS_DIR) / output_file
+    with orders_file.open('w') as fp:
+        json.dump(result, fp, indent=2)
+
+
 def load_orders():
     orders_file = Path(config.ORDERS_DIR) / 'orders.json'
     with orders_file.open() as fp:

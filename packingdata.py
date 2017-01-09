@@ -1,12 +1,14 @@
 import subprocess
 import re
 import collections
+import json
+from pathlib import Path
 
 from PyPDF2 import PdfFileReader
 import attr
 
 import config
-import orders
+from orders import download_shipped_orders
 
 
 @attr.s
@@ -45,8 +47,10 @@ class TrackingNumber:
 
 
 def add_packing_data(pdf_file):
-    # tn_map = get_tracking_number_map()
-    # print(tn_map)
+    json_file = 'shipped_orders.json'
+    # download_shipped_orders(json_file)
+    tn_map = get_tracking_number_map(json_file)
+    print(tn_map)
 
     reader = PdfFileReader(open(pdf_file, 'rb'))
 
@@ -54,42 +58,40 @@ def add_packing_data(pdf_file):
         print(get_tracking_numbers(pdf_file, page_index))
 
 
-def get_tracking_number_map():
+def get_tracking_number_map(json_file):
     """
     Return a dict where the keys are tracking numbers and the values are lists
     of items (in a order).
 
     """
-    result = collections.defaultdict([])
+    result = collections.defaultdict(list)
 
-    for user_id, cred in config.EBAY_CREDENTIALS:
-        request = OrderRequest(cred)
-        orders = request.get_shipped_orders()
-        for order in orders:
-            tnum = get_tracking_number(order)
-            items = request.get_items(order)
-            result[tnum].extend(items)
+    orders_file = Path(config.ORDERS_DIR) / json_file
+    orders = json.load(orders_file.open())
+    for order in orders:
+        for tnum in get_tracking_numbers_for_order(order):
+            result[tnum].extend(order['items'])
 
     return result
 
 
-def get_tracking_number(order):
+def get_tracking_numbers_for_order(order):
     tracking_nums = []
     transactions = order['TransactionArray']['Transaction']
     for transaction in transactions:
         try:
-            tn = (transaction['ShippingDetails']['ShipmentTrackingDetails']
-                ['ShipmentTrackingNumber'])
-            tracking_nums.append(tn)
+            details = transaction['ShippingDetails']['ShipmentTrackingDetails']
         except KeyError:
-            pass
+            details = []
 
-    if len(tracking_nums) == 0:
-        return None
+        if not isinstance(details, list):
+            details = [details]
 
-    # Make sure that all tracking nums are the same.
-    assert all(n == tracking_nums[0] for n in tracking_nums)
-    return tracking_nums[0]
+        for detail in details:
+            tn = detail['ShipmentTrackingNumber']
+            tracking_nums.append(tn)
+
+    return tracking_nums
 
 
 def get_tracking_numbers(pdf_file, page_index):
