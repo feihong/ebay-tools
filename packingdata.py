@@ -1,14 +1,9 @@
-import subprocess
-import re
-import collections
-import json
-from pathlib import Path
-
-from PyPDF2 import PdfFileReader
 import attr
+from PyPDF2 import PdfFileReader
 
 import config
 from orders import download_shipped_orders
+import template_util
 
 
 @attr.s
@@ -26,17 +21,17 @@ class TrackingNumberMeta:
 DOMESTIC_TOP = TrackingNumberMeta(
     slug='domestic-top',
     bbox=(140, 95, 30, 195),
-    output_params=dict(translate=(411, 325), rotate=180),
+    output_params=dict(translate=(411, 325), rotate=180, chars=39, lines=3),
 )
 DOMESTIC_BOTTOM = TrackingNumberMeta(
     slug='domestic-bottom',
     bbox=(140, 495, 30, 195),
-    output_params=dict(translate=(411, 722), rotate=180),
+    output_params=dict(translate=(411, 722), rotate=180, chars=39, lines=3),
 )
 FOREIGN = TrackingNumberMeta(
     slug='foreign',
     bbox=(265, 275, 250, 100),
-    output_params=dict(translate=(537, 143), rotate=-90),
+    output_params=dict(translate=(537, 143), rotate=-90, chars=29, lines=6),
 )
 
 
@@ -46,16 +41,40 @@ class TrackingNumber:
     value = attr.ib(default='')
 
 
+@attr.s
+class OutputInfo:
+    params = attr.ib(default={})
+    value = attr.ib(default='')
+
+    @property
+    def wrapped_text(self):
+        "Return text wrapped according to the output parameters."
+        import textwrap
+        result = textwrap.fill(self.text, self.output_params['chars'])
+        line_count = len(result.splitlines())
+        assert line_count <= self.output_params['lines']
+        return result
+
+
 def add_packing_data(pdf_file):
     json_file = 'shipped_orders.json'
     # download_shipped_orders(json_file)
     tn_map = get_tracking_number_map(json_file)
-    print(tn_map)
+    # print(tn_map)
 
     reader = PdfFileReader(open(pdf_file, 'rb'))
 
+    packing_data = []
     for page_index in range(0, reader.numPages):
-        print(get_tracking_numbers(pdf_file, page_index))
+        tracking_nums = get_tracking_numbers(pdf_file, page_index)
+        for tnum in tracking_nums:
+            info = OutputInfo(
+                # todo: should be string containing item slugs and locations
+                value=tnum.value,
+                params=tnum.meta.output_params)
+            packing_data.append(info)
+
+    print(packing_data)
 
 
 def get_tracking_number_map(json_file):
@@ -64,6 +83,10 @@ def get_tracking_number_map(json_file):
     of items (in a order).
 
     """
+    import collections
+    import json
+    from pathlib import Path
+
     result = collections.defaultdict(list)
 
     orders_file = Path(config.ORDERS_DIR) / json_file
@@ -95,6 +118,8 @@ def get_tracking_numbers_for_order(order):
 
 
 def get_tracking_numbers(pdf_file, page_index):
+    import re
+
     result = []
 
     for tn_meta in (DOMESTIC_TOP, DOMESTIC_BOTTOM):
@@ -114,6 +139,8 @@ def get_tracking_numbers(pdf_file, page_index):
 
 
 def get_text_for_bbox(pdf_file, page_index, bbox):
+    import subprocess
+
     x, y, w, h = (str(num) for num in bbox)
     page_num = str(page_index + 1)
 
