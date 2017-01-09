@@ -61,6 +61,18 @@ class OrderRequest:
         self.credentials = credentials
         self.api = Trading(config_file=None, **self.credentials)
 
+    def get_orders_awaiting_shipment(self):
+        for order in self.get_orders():
+            # Only yield orders that haven't yet been shipped.
+            if 'ShippedTime' not in order:
+                yield order
+
+    def get_shipped_orders(self):
+        for order in self.get_orders():
+            # Only yield orders that have been shipped.
+            if 'ShippedTime' in order:
+                yield order
+
     def get_orders(self):
         self.start = arrow.utcnow().replace(days=-DAYS_BACK)
         # The API doesn't like time values that it thinks are in the future.
@@ -81,17 +93,6 @@ class OrderRequest:
                 # Ignore orders that haven't been paid.
                 if 'PaidTime' not in order:
                     continue
-
-                # Ignore orders that haven't shipped or were shipped more than
-                # a day ago.
-                # shipped_time = order.get('ShippedTime')
-                # if not shipped_time or hours_since(shipped_time) > 24:
-                #     continue
-
-                # Ignore orders that have already shipped.
-                if 'ShippedTime' in order:
-                    continue
-
                 yield order
 
             if reply.PageNumber == reply.PaginationResult.TotalNumberOfPages:
@@ -99,9 +100,9 @@ class OrderRequest:
 
     def get_orders_detail(self):
         "Return orders awaiting shipment, including item and address info."
-        orders = list(self.get_orders())
+        orders = list(self.get_orders_awaiting_shipment())
         for order in orders:
-            order['items'] = list(get_items(order, self.credentials))
+            order['items'] = list(self.get_items(order))
             order['address'] = get_address(order)
 
             if '-' in order['OrderID']:
@@ -146,32 +147,18 @@ class OrderRequest:
                 pagination.TotalNumberOfEntries, pagination.TotalNumberOfPages))
         return response
 
+    def get_items(self, order):
+        for transaction in order['TransactionArray']['Transaction']:
+            item = transaction['Item']
+            item['model'] = util.get_model_for_item(item['ItemID'])
+            item['quantity'] = int(transaction['QuantityPurchased'])
+            yield item
+
 
 def get_items_text(items):
     for item in items:
         yield '{} ({})'.format(item['model'], item['quantity'])
 
-
-def get_items(order, cred):
-    for transaction in order['TransactionArray']['Transaction']:
-        item = transaction['Item']
-        item['model'] = get_model(item['ItemID'], cred)
-        item['quantity'] = int(transaction['QuantityPurchased'])
-        yield item
-
-
-def get_model(item_id, cred):
-    # api = Shopping(config_file=None, **cred)
-    # response = api.execute('GetSingleItem', {
-    #     'ItemID': item_id,
-    #     'IncludeSelector': 'ItemSpecifics'
-    # })
-    # item_specifics = response.reply.Item.ItemSpecifics.NameValueList
-    # for spec in item_specifics:
-    #     if spec.Name == 'Model':
-    #         return spec.Value
-    # return None
-    return util.get_model_for_item(item_id)
 
 
 def get_address(order):
