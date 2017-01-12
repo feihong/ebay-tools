@@ -71,6 +71,8 @@ def load_orders():
         for user_, orders in result['content'].items():
             for order in orders:
                 order['PaidTime'] = util.str_to_local_time(order['PaidTime'])
+                order['items'] = list(get_items(order))
+                order['packing_info'] = util.get_packing_info(order)
 
         return result
 
@@ -121,7 +123,7 @@ class OrderRequest:
         "Return orders awaiting shipment, including item and address info."
         orders = list(self.get_orders_awaiting_shipment())
         for order in orders:
-            order['items'] = list(self.get_items(order))
+            order['items'] = list(get_items(order))
             order['address'] = get_address(order)
 
             if '-' in order['OrderID']:
@@ -166,12 +168,14 @@ class OrderRequest:
                 pagination.TotalNumberOfEntries, pagination.TotalNumberOfPages))
         return response
 
-    def get_items(self, order):
-        for transaction in order['TransactionArray']['Transaction']:
-            item = transaction['Item']
-            item['model'] = util.get_model_for_item(item['ItemID'])
-            item['quantity'] = int(transaction['QuantityPurchased'])
-            yield item
+
+def get_items(order):
+    for transaction in order['TransactionArray']['Transaction']:
+        item = transaction['Item']
+        item['model'] = util.get_model_for_item(item['ItemID'])
+        item['quantity'] = int(transaction['QuantityPurchased'])
+        item['notes'] = util.get_notes_for_item(item['model'])
+        yield item
 
 
 def get_items_text(items):

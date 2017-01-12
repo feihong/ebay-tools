@@ -7,7 +7,6 @@ import arrow
 
 import config
 import util
-import template_util
 
 
 @task
@@ -34,8 +33,6 @@ def generate_report(ctx):
         download = json.load(fp)
         download_time = arrow.get(download['download_time']).to(config.TIME_ZONE)
 
-    # Get map of models -> location.
-    item_map = util.get_item_map()
     # Count the number of orders for each seller.
     seller_order_counts = OrderedDict()
     # Count the number of orders for each buyer.
@@ -53,9 +50,7 @@ def generate_report(ctx):
             'orders.plim',
             user_id=user_id,
             download_time=download_time,
-            orders=orders,
-            item_map=item_map,
-            util=template_util)
+            orders=orders)
 
     util.render_to_file(
         orders_dir / 'index.html',

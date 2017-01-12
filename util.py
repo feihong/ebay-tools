@@ -74,15 +74,25 @@ def str_to_local_time(text):
     return arrow.get(text).to(config.TIME_ZONE)
 
 
-def get_item_map():
-    result = {}
+def get_item_metadata_map():
+    """
+    Return a dict where the keys are models and the values are dicts.
 
+    """
+    result = {}
     with (here / 'ebay_items.csv').open() as fp:
         for row in csv.DictReader(fp):
             model = row['Model'].lower()
             result[model] = row
 
     return result
+
+
+item_metadata_map = get_item_metadata_map()
+
+
+def get_notes_for_item(model):
+    return item_metadata_map.get(model)['Notes']
 
 
 def get_item_model_map():
@@ -99,3 +109,19 @@ item_model_map = get_item_model_map()
 
 def get_model_for_item(item_id):
     return item_model_map.get(item_id)
+
+
+def get_packing_info(order):
+    result = []
+
+    for item in order['items']:
+        if item['quantity'] > 1:
+            text = '{quantity}x {model}'.format(**item)
+        else:
+            text = item['model']
+
+        meta = item_metadata_map.get(item['model'], {'Location': '?'})
+        text += ' ' + meta['Location']
+        result.append(text)
+
+    return ', '.join(result)

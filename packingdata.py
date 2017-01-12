@@ -3,7 +3,6 @@ from PyPDF2 import PdfFileReader
 
 import config
 from orders import download_shipped_orders
-import template_util
 
 
 @attr.s

@@ -13,7 +13,6 @@ from muffin_playground import Application
 
 from logger import log, WebLogger
 import util
-import template_util
 import config
 
 
@@ -77,9 +76,6 @@ def orders_for_user(request):
     pkg = orders.load_orders()
     user = request.match_info.get('user')
 
-    # Get map of models -> location.
-    item_map = util.get_item_map()
-
     for user_, orders in pkg['content'].items():
         if user == user_:
             orders.sort(key=lambda x: x['PaidTime'])
@@ -89,9 +85,7 @@ def orders_for_user(request):
         'static/orders/by_user.plim',
         download_time=pkg['download_time'],
         user=user,
-        orders=orders,
-        item_map=item_map,
-        util=template_util)
+        orders=orders)
 
 
 @app.on_startup.append

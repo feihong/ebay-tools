@@ -31,14 +31,13 @@
       -else
         td = value
 
--def copy_display(items)
-  input readonly='' value=${util.get_copy_text(items, item_map)}
+-def copy_display(order)
+  input readonly='' value=${order['packing_info']}
   button.btn.btn-primary.btn-sm.copy Copy
 
 -def additional_details(item)
-  --- details = util.get_additional_details(item, item_map)
-  -if details
-    div.addl-detail = details
+  -if item['notes']
+    div.addl-detail = item['notes']
 
 
 main.container
@@ -68,7 +67,7 @@ main.container
                     span.highlight
                       (Quantity: ${item['quantity']})
                   = additional_details(item)
-            = copy_display(order['items'])
+            = copy_display(order)
 
   div.awaiting-shipment
     a target='_blank' href='http://k2b-bulk.ebay.com/ws/eBayISAPI.dll?SalesRecordConsole&status=WaitShipment&currentpage=SCSold&ssPageName=STRK:ME:LNLK'
