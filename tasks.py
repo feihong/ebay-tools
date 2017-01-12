@@ -20,6 +20,16 @@ def download_orders_awaiting_shipment(ctx):
 
 
 @task
+def download_shipped_orders(ctx):
+    """
+    Download orders that have been marked as shipped.
+
+    """
+    import orders
+    orders.download_shipped_orders()
+
+
+@task
 def generate_report(ctx):
     """
     Generate HTML report from downloaded orders data.

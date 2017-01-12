@@ -57,7 +57,7 @@ class OutputInfo:
 
 def add_packing_data(pdf_file):
     json_file = 'shipped_orders.json'
-    # download_shipped_orders(json_file)
+    download_shipped_orders(json_file)
     tn_map = get_tracking_number_map(json_file)
     # print(tn_map)
 

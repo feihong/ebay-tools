@@ -25,41 +25,36 @@ def download_orders_awaiting_shipment():
     Download orders awaiting shipment.
 
     """
+    download_orders('orders.json', 'get_orders_awaiting_shipment')
+
+
+def download_shipped_orders(output_file='shipped_orders.json'):
+    """
+    Download orders that have been marked as shipped (i.e. their shipping labels
+    have been printed).
+
+    """
+    download_orders(output_file, 'get_shipped_orders')
+
+
+def download_orders(output_file, method):
     order_count = 0
     result = dict(payload={})
 
     for user_id, cred in config.EBAY_CREDENTIALS:
         request = OrderRequest(cred)
-        orders = list(request.get_orders_awaiting_shipment())
+        get_orders = getattr(request, method)
+        orders = list(get_orders())
         result['payload'][user_id] = orders
         order_count += len(orders)
 
     result['download_time'] = arrow.utcnow().format()
 
-    orders_file = Path(config.ORDERS_DIR) / 'orders.json'
-    with orders_file.open('w') as fp:
-        json.dump(result, fp, indent=2)
-
-    log('Downloaded {} orders awaiting shipment to {}'.format(order_count, orders_file))
-
-
-def download_shipped_orders(output_file):
-    """
-    Download orders whose shipping labels have been printed.
-
-    """
-    result = []
-
-    for user_id, cred in config.EBAY_CREDENTIALS:
-        request = OrderRequest(cred)
-        orders = list(request.get_shipped_orders())
-        for order in orders:
-            order['items'] = list(request.get_items(order))
-        result.extend(orders)
-
     orders_file = Path(config.ORDERS_DIR) / output_file
     with orders_file.open('w') as fp:
         json.dump(result, fp, indent=2)
+
+    log('Downloaded {} orders to {}'.format(order_count, orders_file))
 
 
 def load_orders(json_file):
