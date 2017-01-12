@@ -38,7 +38,7 @@ async def status(request):
 @app.register('/download-orders/')
 async def download_orders(request):
     import orders
-    future = run_command(orders.download_orders)
+    future = run_command(orders.download_orders_awaiting_shipment)
     if future:
         await future
         return 'ok'
@@ -49,14 +49,14 @@ async def download_orders(request):
 @app.register('/orders/')
 def orders(request):
     import orders
-    pkg = orders.load_orders()
+    pkg = orders.load_orders('orders.json')
 
     # Count the number of orders for each seller.
     seller_order_counts = OrderedDict()
     # Count the number of orders for each buyer.
     buyer_order_counts = defaultdict(int)
 
-    for user_id, orders in pkg['content'].items():
+    for user_id, orders in pkg['payload'].items():
         orders.sort(key=lambda x: x['PaidTime'])
         seller_order_counts[user_id] = len(orders)
         for order in orders:
@@ -73,10 +73,10 @@ def orders(request):
 @app.register('/orders/{user}/')
 def orders_for_user(request):
     import orders
-    pkg = orders.load_orders()
+    pkg = orders.load_orders('orders.json')
     user = request.match_info.get('user')
 
-    for user_, orders in pkg['content'].items():
+    for user_, orders in pkg['payload'].items():
         if user == user_:
             orders.sort(key=lambda x: x['PaidTime'])
             break

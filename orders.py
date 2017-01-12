@@ -20,18 +20,18 @@ SHIPPING_URL_TEMPLATE_2 = 'https://payments.ebay.com/ws/eBayISAPI.dll?PrintPosta
 DAYS_BACK = 10
 
 
-def download_orders():
+def download_orders_awaiting_shipment():
     """
     Download orders awaiting shipment.
 
     """
     order_count = 0
-    result = {'content': {}}
+    result = dict(payload={})
 
     for user_id, cred in config.EBAY_CREDENTIALS:
         request = OrderRequest(cred)
-        orders = request.get_orders_detail()
-        result['content'][user_id] = orders
+        orders = list(request.get_orders_awaiting_shipment())
+        result['payload'][user_id] = orders
         order_count += len(orders)
 
     result['download_time'] = arrow.utcnow().format()
@@ -39,7 +39,8 @@ def download_orders():
     orders_file = Path(config.ORDERS_DIR) / 'orders.json'
     with orders_file.open('w') as fp:
         json.dump(result, fp, indent=2)
-    log('Downloaded {} orders to {}'.format(order_count, orders_file))
+
+    log('Downloaded {} orders awaiting shipment to {}'.format(order_count, orders_file))
 
 
 def download_shipped_orders(output_file):
@@ -61,18 +62,20 @@ def download_shipped_orders(output_file):
         json.dump(result, fp, indent=2)
 
 
-def load_orders():
-    orders_file = Path(config.ORDERS_DIR) / 'orders.json'
+def load_orders(json_file):
+    orders_file = Path(config.ORDERS_DIR) / json_file
     with orders_file.open() as fp:
         result = json.load(fp)
         # Convert download_time to a datetime object.
         result['download_time'] = util.str_to_local_time(result['download_time'])
 
-        for user_, orders in result['content'].items():
+        for user_, orders in result['payload'].items():
             for order in orders:
                 order['PaidTime'] = util.str_to_local_time(order['PaidTime'])
                 order['items'] = list(get_items(order))
                 order['packing_info'] = util.get_packing_info(order)
+                order['address'] = get_address(order)
+                order['shipping_url'] = get_shipping_url(order)
 
         return result
 
@@ -183,7 +186,6 @@ def get_items_text(items):
         yield '{} ({})'.format(item['model'], item['quantity'])
 
 
-
 def get_address(order):
     sa = order['ShippingAddress']
     addr = (
@@ -193,6 +195,15 @@ def get_address(order):
         '%s, %s %s' % (sa['CityName'], sa['StateOrProvince'], sa['PostalCode']),
         sa['CountryName'])
     return '\n'.join(line for line in addr if line is not None and line.strip())
+
+
+def get_shipping_url(order):
+    if '-' in order['OrderID']:
+        item_id, transaction_id = order['OrderID'].split('-')
+        return SHIPPING_URL_TEMPLATE.format(
+            transaction_id=transaction_id, item_id=item_id)
+    else:
+        return SHIPPING_URL_TEMPLATE_2.format(order_id=order['OrderID'])
 
 
 def hours_since(dt):

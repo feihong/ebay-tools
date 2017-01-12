@@ -10,12 +10,13 @@ import util
 
 
 @task
-def download_orders(ctx):
+def download_orders_awaiting_shipment(ctx):
     """
     Download orders awaiting shipment.
+
     """
     import orders
-    orders.download_orders()
+    orders.download_orders_awaiting_shipment()
 
 
 @task
