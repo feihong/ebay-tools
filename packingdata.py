@@ -45,6 +45,9 @@ class TrackingNumber:
     def __repr__(self):
         return '{} ({})'.format(self.value, self.meta.slug)
 
+    def __hash__(self):
+        return hash(self.value)
+
 
 @attr.s
 class OutputInfo:
@@ -93,7 +96,7 @@ class PackingInfoAdder:
                 result[tn].append(order['packing_info'])
 
         # Join the lists into strings.
-        return dict((k, ', '.join(v)) for k, v  in result.items())
+        return dict((k, '; '.join(v)) for k, v  in result.items())
 
 
 def get_tracking_number_map(json_file):
@@ -113,7 +116,8 @@ def get_tracking_number_map(json_file):
 
 
 def get_tracking_numbers_for_order(order):
-    tracking_nums = []
+    tracking_nums = set()
+
     transactions = order['TransactionArray']['Transaction']
     for transaction in transactions:
         try:
@@ -126,7 +130,7 @@ def get_tracking_numbers_for_order(order):
 
         for detail in details:
             tn = detail['ShipmentTrackingNumber']
-            tracking_nums.append(tn)
+            tracking_nums.add(tn)
 
     return tracking_nums
 
