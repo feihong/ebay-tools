@@ -92,7 +92,8 @@ item_metadata_map = get_item_metadata_map()
 
 
 def get_notes_for_item(model):
-    return item_metadata_map.get(model)['Notes']
+    d = item_metadata_map.get(model)
+    return d['Notes'] if d else None
 
 
 def get_item_model_map():
