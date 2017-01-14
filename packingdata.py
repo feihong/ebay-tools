@@ -10,30 +10,44 @@ from orders import download_shipped_orders, load_orders
 @attr.s
 class TrackingNumberMeta:
     # One of: domestic-top, domestic-bottom, foreign
-    slug = attr.ib(default='')
+    key = attr.ib(default='')
     # Area on label where tracking number is found.
     bbox = attr.ib(default=())
-    # Where to write packing data and how to rotate the text.
-    output_params = attr.ib(default={})
-
-    def __str__(self):
-        return '<{}>'.format(slug)
 
 
-DOMESTIC_TOP = TrackingNumberMeta(
-    slug='domestic-top',
+TrackingNumberMeta.DOMESTIC_TOP = TrackingNumberMeta(
+    key='domestic-top',
     bbox=(140, 95, 30, 195),
-    output_params=dict(translate=(411, 325), rotate=180, chars=39, lines=3),
 )
-DOMESTIC_BOTTOM = TrackingNumberMeta(
-    slug='domestic-bottom',
+TrackingNumberMeta.DOMESTIC_BOTTOM = TrackingNumberMeta(
+    key='domestic-bottom',
     bbox=(140, 495, 30, 195),
-    output_params=dict(translate=(411, 722), rotate=180, chars=39, lines=3),
 )
-FOREIGN = TrackingNumberMeta(
-    slug='foreign',
+TrackingNumberMeta.FOREIGN = TrackingNumberMeta(
+    key='foreign',
     bbox=(265, 275, 250, 100),
-    output_params=dict(translate=(537, 143), rotate=-90, chars=29, lines=6),
+)
+
+
+@attr.s
+class OutputInfoMeta:
+    # Same meaning as TrackingNumberMeta.
+    key = attr.ib(default='')
+    # Where to write packing data and how to rotate the text.
+    params = attr.ib(default={})
+
+
+OutputInfoMeta.DOMESTIC_TOP = OutputInfoMeta(
+    key='domestic-top',
+    params=dict(translate=(411, 325), rotate=180, chars=39, lines=3),
+)
+OutputInfoMeta.DOMESTIC_BOTTOM = OutputInfoMeta(
+    key='domestic-bottom',
+    params=dict(translate=(411, 722), rotate=180, chars=39, lines=3),
+)
+OutputInfoMeta.FOREIGN = OutputInfoMeta(
+    key='foreign',
+    params=dict(translate=(537, 143), rotate=-90, chars=29, lines=6),
 )
 
 
@@ -43,7 +57,7 @@ class TrackingNumber:
     value = attr.ib(default='')
 
     def __repr__(self):
-        return '{} ({})'.format(self.value, self.meta.slug)
+        return '{} ({})'.format(self.value, self.meta.key)
 
     def __hash__(self):
         return hash(self.value)
@@ -51,14 +65,14 @@ class TrackingNumber:
 
 @attr.s
 class OutputInfo:
-    params = attr.ib(default={})
+    meta = attr.ib(default=None)
     value = attr.ib(default='')
 
     @property
     def wrapped_text(self):
         "Return text wrapped according to the output parameters."
         import textwrap
-        result = textwrap.fill(self.text, self.output_params['chars'])
+        result = textwrap.fill(self.text, self.meta.params['chars'])
         line_count = len(result.splitlines())
         assert line_count <= self.output_params['lines']
         return result
@@ -143,17 +157,18 @@ def get_tracking_numbers_from_page(pdf_file, page_index):
 
     result = []
 
-    for tn_meta in (DOMESTIC_TOP, DOMESTIC_BOTTOM):
+    for tn_meta in (TrackingNumberMeta.DOMESTIC_TOP, TrackingNumberMeta.DOMESTIC_BOTTOM):
         text = get_text_for_bbox(pdf_file, page_index, tn_meta.bbox)
         # Must be 22-digit number.
         if re.match(r'\d{22}', text):
             tn = TrackingNumber(meta=tn_meta, value=text)
             result.append(tn)
 
-    text = get_text_for_bbox(pdf_file, page_index, FOREIGN.bbox)
+    foreign = TrackingNumberMeta.FOREIGN
+    text = get_text_for_bbox(pdf_file, page_index, foreign.bbox)
     # Must be two letters, then 9 digits, then 'US'.
     if re.match(r'[A-Z]{2}\d{9}US', text):
-        tn = TrackingNumber(meta=FOREIGN, value=text)
+        tn = TrackingNumber(meta=foreign, value=text)
         result.append(tn)
 
     return result

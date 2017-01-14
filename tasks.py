@@ -157,8 +157,17 @@ def add_packing_data_to_labels(ctx, pdf_file='eBayISAPI.dll.pdf'):
     bulk shipping label print tool.
 
     """
-    import packingdata
-    packingdata.add_packing_data(pdf_file)
+    from packingdata import PackingInfoAdder
+    adder = PackingInfoAdder(pdf_file)
+
+    # for k, v in adder.tn_pi.items():
+    #     print('{} -> {}'.format(k, v))
+
+    for tracking_nums in adder.get_tracking_numbers_from_pdf():
+        print(tracking_nums)
+
+    # for pi in adder.get_packing_info():
+    #     print(pi)
 
 
 @task
