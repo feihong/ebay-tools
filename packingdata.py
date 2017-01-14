@@ -36,6 +36,11 @@ class OutputInfoMeta:
     # Where to write packing data and how to rotate the text.
     params = attr.ib(default={})
 
+    @staticmethod
+    def get(key):
+        attrname = key.upper().replace('-', '_')
+        return getattr(OutputInfoMeta, attrname)
+
 
 OutputInfoMeta.DOMESTIC_TOP = OutputInfoMeta(
     key='domestic-top',
@@ -63,7 +68,7 @@ class TrackingNumber:
         return hash(self.value)
 
 
-@attr.s
+@attr.s(repr=False)
 class OutputInfo:
     meta = attr.ib(default=None)
     value = attr.ib(default='')
@@ -77,6 +82,9 @@ class OutputInfo:
         assert line_count <= self.output_params['lines']
         return result
 
+    def __repr__(self):
+        return '{} ({})'.format(self.value, self.meta.key)
+
 
 class PackingInfoAdder:
     def __init__(self, pdf_file):
@@ -84,14 +92,19 @@ class PackingInfoAdder:
         self.reader = PdfFileReader(open(pdf_file, 'rb'))
         self.tn_pi = self.build_tracking_number_packing_info_map()
 
-    def get_packing_info_list(self):
+    def get_output_infos(self):
         result = []
 
         for tracking_numbers in self.get_tracking_numbers_from_pdf(self):
-            packing_infos = [self.tn_pi.get(tn, '') for tn in tracking_numbers]
-            result.append(packing_infos)
+            output_infos = [self.get_output_info(tn) for tn in tracking_numbers]
+            result.append(output_infos)
 
         return result
+
+    def get_output_info(self, tracking_num):
+        meta = OutputInfoMeta.get(tracking_num.key)
+        packing_info = self.tn_pi.get(tracking_num, '')
+        return OutputInfo(meta=meta, value=packing_info)
 
     def get_tracking_numbers_from_pdf(self):
         for page_index in range(0, self.reader.numPages):
