@@ -1,12 +1,15 @@
+import collections
+
 import attr
 from PyPDF2 import PdfFileReader
 
 import config
-from orders import download_shipped_orders
+from orders import download_shipped_orders, load_orders
 
 
 @attr.s
 class TrackingNumberMeta:
+    # One of: domestic-top, domestic-bottom, foreign
     slug = attr.ib(default='')
     # Area on label where tracking number is found.
     bbox = attr.ib(default=())
@@ -34,10 +37,13 @@ FOREIGN = TrackingNumberMeta(
 )
 
 
-@attr.s
+@attr.s(repr=False)
 class TrackingNumber:
-    meta = attr.ib()
+    meta = attr.ib(default=None)
     value = attr.ib(default='')
+
+    def __repr__(self):
+        return '{} ({})'.format(self.value, self.meta.slug)
 
 
 @attr.s
@@ -55,44 +61,53 @@ class OutputInfo:
         return result
 
 
-def add_packing_data(pdf_file):
-    json_file = 'shipped_orders.json'
-    download_shipped_orders(json_file)
-    tn_map = get_tracking_number_map(json_file)
-    # print(tn_map)
+class PackingInfoAdder:
+    def __init__(self, pdf_file):
+        self.pdf_file = pdf_file
+        self.reader = PdfFileReader(open(pdf_file, 'rb'))
+        self.tn_pi = self.build_tracking_number_packing_info_map()
 
-    reader = PdfFileReader(open(pdf_file, 'rb'))
+    def get_packing_info_list(self):
+        result = []
 
-    packing_data = []
-    for page_index in range(0, reader.numPages):
-        tracking_nums = get_tracking_numbers(pdf_file, page_index)
-        for tnum in tracking_nums:
-            info = OutputInfo(
-                # todo: should be string containing item slugs and locations
-                value=tnum.value,
-                params=tnum.meta.output_params)
-            packing_data.append(info)
+        for tracking_numbers in self.get_tracking_numbers_from_pdf(self):
+            packing_infos = [self.tn_pi.get(tn, '') for tn in tracking_numbers]
+            result.append(packing_infos)
 
-    print(packing_data)
+        return result
+
+    def get_tracking_numbers_from_pdf(self):
+        for page_index in range(0, self.reader.numPages):
+            yield get_tracking_numbers_from_page(self.pdf_file, page_index)
+
+    def get_shipped_orders(self):
+        for user, orders in load_orders('shipped_orders.json')['payload'].items():
+            for order in orders:
+                yield order
+
+    def build_tracking_number_packing_info_map(self):
+        result = collections.defaultdict(list)
+
+        for order in self.get_shipped_orders():
+            for tn in get_tracking_numbers_for_order(order):
+                result[tn].append(order['packing_info'])
+
+        # Join the lists into strings.
+        return dict((k, ', '.join(v)) for k, v  in result.items())
 
 
 def get_tracking_number_map(json_file):
     """
     Return a dict where the keys are tracking numbers and the values are lists
-    of items (in a order).
+    of packing_info strings.
 
     """
-    import collections
-    import json
-    from pathlib import Path
-
     result = collections.defaultdict(list)
 
-    orders_file = Path(config.ORDERS_DIR) / json_file
-    orders = json.load(orders_file.open())
-    for order in orders:
-        for tnum in get_tracking_numbers_for_order(order):
-            result[tnum].extend(order['items'])
+    for user, orders in load_orders(json_file):
+        for order in orders:
+            for tnum in get_tracking_numbers_for_order(order):
+                result[tnum].append(order['packing_info'])
 
     return result
 
@@ -116,7 +131,10 @@ def get_tracking_numbers_for_order(order):
     return tracking_nums
 
 
-def get_tracking_numbers(pdf_file, page_index):
+def get_tracking_numbers_from_page(pdf_file, page_index):
+    """
+    Return a list of tracking numbers for the given page of the given pdf file.
+    """
     import re
 
     result = []
