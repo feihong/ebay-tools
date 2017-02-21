@@ -109,7 +109,7 @@ item_model_map = get_item_model_map()
 
 
 def get_model_for_item(item_id):
-    return item_model_map.get(item_id)
+    return item_model_map.get(item_id, '?')
 
 
 def get_packing_info(order):
