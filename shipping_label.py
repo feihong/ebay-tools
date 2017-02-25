@@ -5,6 +5,24 @@ from reportlab.lib.utils import ImageReader
 from reportlab.pdfgen.canvas import Canvas
 
 
+def crop_shipping_label(pdf_file):
+    output = PdfFileWriter()
+    output.addPage(get_cropped_page(pdf_file))
+
+    with open('cropped_label.pdf', 'wb') as fp:
+        output.write(fp)
+
+
+def get_cropped_page(pdf_file):
+    fp = open(pdf_file, 'rb')
+    # Set strict to False because document may not have unique keys.
+    reader = PdfFileReader(fp, strict=False)
+    page = reader.getPage(0)
+    page.mediaBox.lowerLeft = (65, 445)
+    page.mediaBox.upperRight = (540, 750)
+    return page
+
+
 def process_return_label(pdf_file):
     image = list(get_images(pdf_file))[0]
     image_reader = ImageReader(image)

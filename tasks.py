@@ -94,6 +94,15 @@ def combine_pdfs_for_print(ctx):
 
 
 @task
+def crop_shipping_label(ctx, pdf_file):
+    """
+    Crop a shipping label PDF so that the order details are no longer visible.
+    """
+    from shipping_label import crop_shipping_label
+    crop_shipping_label(pdf_file)    
+
+
+@task
 def send_email(ctx):
     """
     Send an email notifying you of the number of orders awaiting shipment.
