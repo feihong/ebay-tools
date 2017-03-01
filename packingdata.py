@@ -155,8 +155,14 @@ class PackingInfoAdder:
 
     def write_output_file(self, output_file):
         writer = PdfFileWriter()
-        for page in self.get_output_pages():
-            writer.addPage(page)
+        input_pages = (
+            self.reader.getPage(i)
+            for i in range(self.reader.numPages))
+        output_pages = self.get_output_pages()
+
+        for input_page, output_page in zip(input_pages, output_pages):
+            input_page.mergePage(output_page)
+            writer.addPage(input_page)
         with open(output_file, 'wb') as fp:
             writer.write(fp)
 
