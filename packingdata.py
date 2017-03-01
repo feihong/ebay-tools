@@ -1,5 +1,6 @@
 import collections
 import textwrap
+import json
 
 import attr
 from PyPDF2 import PdfFileReader
@@ -146,20 +147,23 @@ class PackingInfoAdder:
         for page_index in range(0, self.reader.numPages):
             yield get_tracking_numbers_from_page(self.pdf_file, page_index)
 
-    def get_shipped_orders(self):
-        for user, orders in load_orders('shipped_orders.json')['payload'].items():
-            for order in orders:
-                yield order
 
-    def build_tracking_number_packing_info_map(self):
-        result = collections.defaultdict(list)
+def get_shipped_orders():
+    for user, orders in load_orders('shipped_orders.json')['payload'].items():
+        for order in orders:
+            yield order
 
-        for order in self.get_shipped_orders():
-            for tn in get_tracking_numbers_for_order(order):
-                result[tn].append(order['packing_info'])
 
-        # Join the lists into strings.
-        return dict((k, '; '.join(v)) for k, v  in result.items())
+def generate_tracking_num_to_order_id_file(output_file):
+    result = collections.defaultdict(list)
+
+    for order in get_shipped_orders():
+        for tn in get_tracking_numbers_for_order(order):
+            result[tn].append(order['OrderID'])
+
+    print('Found {} tracking numbers'.format(len(result)))
+    with open(output_file, 'w') as fp:
+        json.dump(result, fp, indent=2)
 
 
 def get_tracking_number_map(json_file):
