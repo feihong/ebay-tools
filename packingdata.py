@@ -71,13 +71,24 @@ class ShippingLabelOutputMeta:
     @staticmethod
     def get_output_info(type, text):
         meta = ShippingLabelOutputMeta.get(type)
-        text = textwrap.fill(text, meta.max_len)
+        if meta.max_len is not None:
+            text = textwrap.fill(text, meta.max_len)
+
+        if meta.max_lines is not None:
+            overflow = len(text.splitlines()) > meta.max_lines
+        else:
+            overflow = False
+
         return OutputInfo(
             text=text,
-            overflow=len(text.splitlines()) > meta.max_lines,
+            overflow=overflow,
             translate=meta.translate,
             rotate=meta.rotate,
         )
+
+    @classmethod
+    def get_center_line(cls):
+        return cls.get_output_info('domestic-center-line', '-  ' * 30)
 
 
 ShippingLabelOutputMeta.add_meta(
@@ -93,6 +104,13 @@ ShippingLabelOutputMeta.add_meta(
     rotate=0,
     max_len=32,
     max_lines=2,
+)
+ShippingLabelOutputMeta.add_meta(
+    type='domestic-center-line',
+    translate=(45, 397),
+    rotate=0,
+    max_len=None,
+    max_lines=None,
 )
 ShippingLabelOutputMeta.add_meta(
     type='foreign',
@@ -133,12 +151,17 @@ class PackingInfoAdder:
         with open('orders/tracking_num_to_packing_info.json') as fp:
             self.tn_pi = json.load(fp)
 
+    def get_output_pages(self):
+        pass
+
     def get_output_infos(self):
         result = []
 
         for tracking_numbers in self.get_tracking_numbers_from_pdf():
             output_infos = [self._get_output_info(tn) for tn in tracking_numbers]
             result.append(output_infos)
+            if len(tracking_numbers) >= 2:
+                result.append(ShippingLabelOutputMeta.get_center_line())
 
         return result
 
@@ -150,6 +173,9 @@ class PackingInfoAdder:
         packing_info = self.tn_pi.get(tracking_num.value, '?')
         return ShippingLabelOutputMeta.get_output_info(
             tracking_num.type, packing_info)
+
+    def _get_output_page(self, output_infos):
+        pass
 
 
 def get_shipped_orders():

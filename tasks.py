@@ -178,6 +178,8 @@ def add_packing_data_to_labels(ctx, pdf_file='eBayISAPI.dll.pdf'):
     bulk shipping label print tool.
 
     """
+    # import orders
+    # orders.download_shipped_orders()
     pdf_file = '../private-data/ebay/12-labels.pdf'
     import packingdata
     # packingdata.generate_tracking_num_to_order_id_file()
