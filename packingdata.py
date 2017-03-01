@@ -97,6 +97,10 @@ class ShippingLabelOutputMeta:
         return cls.get_output_info(
             'page-number', 'Page {} of {}'.format(num, total))
 
+    @classmethod
+    def get_username(cls, text):
+        return cls.get_output_info('username', 'User: {}'.format(text))
+
 
 ShippingLabelOutputMeta.add_meta(
     type='domestic-top',
@@ -195,14 +199,18 @@ class PackingInfoAdder:
         tracking_num_collection = list(self.get_tracking_numbers_from_pdf())
 
         for i, tracking_numbers in enumerate(tracking_num_collection, 1):
-            output_infos = [self._get_output_info(tn) for tn in tracking_numbers]
+            output_infos = [self._get_packing_info(tn)
+                for tn in tracking_numbers]
 
-            if len(tracking_numbers) >= 2:
-                output_infos.append(ShippingLabelOutputMeta.get_center_line())
+            output_infos.append(self._get_username(tracking_numbers[0]))
 
             output_infos.append(
                 ShippingLabelOutputMeta.get_page_number(
                     i, len(tracking_num_collection)))
+
+            if len(tracking_numbers) >= 2:
+                output_infos.append(ShippingLabelOutputMeta.get_center_line())
+
             result.append(output_infos)
 
         return result
@@ -211,10 +219,15 @@ class PackingInfoAdder:
         for page_index in range(0, self.reader.numPages):
             yield get_tracking_numbers_from_page(self.pdf_file, page_index)
 
-    def _get_output_info(self, tracking_num):
-        packing_info = self.tn_pi.get(tracking_num.value, '?')
+    def _get_packing_info(self, tracking_num):
+        order_info = self.tn_pi.get(tracking_num.value)
+        packing_info = order_info['packing_info']
         return ShippingLabelOutputMeta.get_output_info(
             tracking_num.type, packing_info)
+
+    def _get_username(self, tracking_num):
+        order_info = self.tn_pi.get(tracking_num.value)
+        return ShippingLabelOutputMeta.get_username(order_info['username'])
 
     def _get_output_page(self, output_infos):
         inch = 72
@@ -273,7 +286,11 @@ def generate_tracking_num_to_packing_info_file():
     for tracking_num in keys:
         order_ids = result[tracking_num]
         packing_info = '; '.join(orders[id]['packing_info'] for id in order_ids)
-        result[tracking_num] = packing_info
+        username = orders[order_ids[0]]['username']
+        result[tracking_num] = dict(
+            username=username,
+            order_ids=order_ids,
+            packing_info=packing_info)
 
     with open(output_file, 'w') as fp:
         json.dump(result, fp, indent=2)
