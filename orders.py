@@ -87,13 +87,13 @@ class OrderRequest:
                 yield order
 
     def get_shipped_orders(self):
-        for order in self.get_orders():
+        for order in self.get_orders(days_back=1):
             # Only yield orders that have been shipped.
             if 'ShippedTime' in order:
                 yield order
 
-    def get_orders(self):
-        self.start = arrow.utcnow().replace(days=-DAYS_BACK)
+    def get_orders(self, days_back=DAYS_BACK):
+        self.start = arrow.utcnow().replace(days=-days_back)
         # The API doesn't like time values that it thinks are in the future.
         self.end = arrow.utcnow().replace(minutes=-2)
 
