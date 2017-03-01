@@ -1,4 +1,5 @@
 import collections
+import textwrap
 
 import attr
 from PyPDF2 import PdfFileReader
@@ -8,61 +9,103 @@ from orders import download_shipped_orders, load_orders
 
 
 @attr.s
-class TrackingNumberMeta:
+class TrackingNumberReadMeta:
+    """
+    This class stores the bounding box for a particular type of tracking number.
+
+    """
+    entries = {}
+
     # One of: domestic-top, domestic-bottom, foreign
-    key = attr.ib(default='')
+    type = attr.ib(default='')
     # Area on label where tracking number is found.
     bbox = attr.ib(default=())
 
+    @classmethod
+    def add_meta(cls, type, bbox):
+        cls.entries[type] = TrackingNumberReadMeta(type=type, bbox=bbox)
 
-TrackingNumberMeta.DOMESTIC_TOP = TrackingNumberMeta(
-    key='domestic-top',
+    @classmethod
+    def get(cls, type):
+        return cls.entries[type]
+
+
+TrackingNumberReadMeta.add_meta(
+    type='domestic-top',
     bbox=(140, 95, 30, 195),
 )
-TrackingNumberMeta.DOMESTIC_BOTTOM = TrackingNumberMeta(
-    key='domestic-bottom',
+TrackingNumberReadMeta.add_meta(
+    type='domestic-bottom',
     bbox=(140, 495, 30, 195),
 )
-TrackingNumberMeta.FOREIGN = TrackingNumberMeta(
-    key='foreign',
+TrackingNumberReadMeta.add_meta(
+    type='foreign',
     bbox=(265, 275, 250, 100),
 )
 
 
 @attr.s
-class OutputInfoMeta:
-    # Same meaning as TrackingNumberMeta.
-    key = attr.ib(default='')
-    # Where to write packing data and how to rotate the text.
-    params = attr.ib(default={})
+class ShippingLabelOutputMeta:
+    """
+    This class stores the output parameters for a particular type of shipping
+    label output.
+
+    """
+    entries = {}
+
+    type = attr.ib(default='')      # type of tracking number
+    translate = attr.ib(default=(10, 10))
+    rotate = attr.ib(default=0)
+    max_len = attr.ib(default=20)
+    max_lines = attr.ib(default=2)
+
+    @classmethod
+    def add_meta(cls, type, **kwargs):
+        cls.entries[type] = ShippingLabelOutputMeta(type=type, **kwargs)
 
     @staticmethod
-    def get(key):
-        attrname = key.upper().replace('-', '_')
-        return getattr(OutputInfoMeta, attrname)
+    def get_output_info(type, text):
+        attrname = type.upper().replace('-', '_')
+        meta = getattr(TrackingNumberOutputMeta, attrname)
+        text = textwrap.fill(text, meta.max_len)
+        return OutputInfo(
+            text=text,
+            overflow=len(text.splitlines()) > meta.max_lines,
+            translate=meta.translate,
+            rotate=meta.rotate,
+        )
 
 
-OutputInfoMeta.DOMESTIC_TOP = OutputInfoMeta(
-    key='domestic-top',
-    params=dict(translate=(411, 325), rotate=180, chars=39, lines=3),
+ShippingLabelOutputMeta.add_meta(
+    type='domestic-top',
+    translate=(244, 316),
+    rotate=0,
+    max_len=32,
+    max_lines=2,
 )
-OutputInfoMeta.DOMESTIC_BOTTOM = OutputInfoMeta(
-    key='domestic-bottom',
-    params=dict(translate=(411, 722), rotate=180, chars=39, lines=3),
+ShippingLabelOutputMeta.add_meta(
+    type='domestic-bottom',
+    translate=(244, 713),
+    rotate=0,
+    max_len=32,
+    max_lines=2,
 )
-OutputInfoMeta.FOREIGN = OutputInfoMeta(
-    key='foreign',
-    params=dict(translate=(537, 143), rotate=-90, chars=29, lines=6),
+ShippingLabelOutputMeta.add_meta(
+    type='foreign',
+    translate=(537, 143),
+    rotate=-90,
+    max_len=23,
+    max_lines=5,
 )
 
 
 @attr.s(repr=False)
 class TrackingNumber:
-    meta = attr.ib(default=None)
-    value = attr.ib(default='')
+    type = attr.ib(default='domestic-top')
+    value = attr.ib(default='0000 0000 0000 0000')
 
     def __repr__(self):
-        return '{} ({})'.format(self.value, self.meta.key)
+        return '{} ({})'.format(self.value, self.type)
 
     def __hash__(self):
         return hash(self.value)
@@ -70,20 +113,13 @@ class TrackingNumber:
 
 @attr.s(repr=False)
 class OutputInfo:
-    meta = attr.ib(default=None)
-    value = attr.ib(default='')
-
-    @property
-    def wrapped_text(self):
-        "Return text wrapped according to the output parameters."
-        import textwrap
-        result = textwrap.fill(self.text, self.meta.params['chars'])
-        line_count = len(result.splitlines())
-        assert line_count <= self.output_params['lines']
-        return result
+    text = attr.ib(default='xxx xxx')
+    overflow = attr.ib(default=False)       # if text takes up too many lines
+    translate = attr.ib(default=(10, 10))
+    rotate = attr.ib(default=0)
 
     def __repr__(self):
-        return '{} ({})'.format(self.value, self.meta.key)
+        return '{} ({})'.format(self.text, self.overflow)
 
 
 class PackingInfoAdder:
@@ -165,29 +201,36 @@ def get_tracking_numbers_for_order(order):
 def get_tracking_numbers_from_page(pdf_file, page_index):
     """
     Return a list of tracking numbers for the given page of the given pdf file.
+
     """
     import re
 
     result = []
 
-    for tn_meta in (TrackingNumberMeta.DOMESTIC_TOP, TrackingNumberMeta.DOMESTIC_BOTTOM):
-        text = get_text_for_bbox(pdf_file, page_index, tn_meta.bbox)
+    for type in ('domestic-top', 'domestic-bottom'):
+        bbox = TrackingNumberReadMeta.get(type).bbox
+        text = get_text_for_bbox(pdf_file, page_index, bbox)
         # Must be 22-digit number.
         if re.match(r'\d{22}', text):
-            tn = TrackingNumber(meta=tn_meta, value=text)
+            tn = TrackingNumber(type=type, value=text)
             result.append(tn)
 
-    foreign = TrackingNumberMeta.FOREIGN
+    foreign = TrackingNumberReadMeta.get('foreign')
     text = get_text_for_bbox(pdf_file, page_index, foreign.bbox)
     # Must be two letters, then 9 digits, then 'US'.
     if re.match(r'[A-Z]{2}\d{9}US', text):
-        tn = TrackingNumber(meta=foreign, value=text)
+        tn = TrackingNumber(type='foreign', value=text)
         result.append(tn)
 
     return result
 
 
 def get_text_for_bbox(pdf_file, page_index, bbox):
+    """
+    For the given PDF file, return all the text on page `page_index` inside
+    bounding box `bbox`.
+
+    """
     import subprocess
 
     x, y, w, h = (str(num) for num in bbox)

@@ -99,7 +99,7 @@ def crop_shipping_label(ctx, pdf_file):
     Crop a shipping label PDF so that the order details are no longer visible.
     """
     from shipping_label import crop_shipping_label
-    crop_shipping_label(pdf_file)    
+    crop_shipping_label(pdf_file)
 
 
 @task
@@ -166,15 +166,15 @@ def add_packing_data_to_labels(ctx, pdf_file='eBayISAPI.dll.pdf'):
     bulk shipping label print tool.
 
     """
+    pdf_file = '../private-data/ebay/12-labels.pdf'
     from packingdata import PackingInfoAdder
     adder = PackingInfoAdder(pdf_file)
-
-    # for k, v in adder.tn_pi.items():
-    #     print('{} -> {}'.format(k, v))
 
     for tracking_nums in adder.get_tracking_numbers_from_pdf():
         print(tracking_nums)
 
+    # for k, v in adder.tn_pi.items():
+    #     print('{} -> {}'.format(k, v))
     # for pi in adder.get_packing_info():
     #     print(pi)
 
