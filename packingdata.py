@@ -97,14 +97,14 @@ ShippingLabelOutputMeta.add_meta(
     type='domestic-top',
     translate=(244, 316),
     rotate=0,
-    max_len=32,
+    max_len=27,
     max_lines=2,
 )
 ShippingLabelOutputMeta.add_meta(
     type='domestic-bottom',
     translate=(244, 713),
     rotate=0,
-    max_len=32,
+    max_len=27,
     max_lines=2,
 )
 ShippingLabelOutputMeta.add_meta(
@@ -163,7 +163,7 @@ class PackingInfoAdder:
         for input_page, output_page in zip(input_pages, output_pages):
             input_page.mergePage(output_page)
             writer.addPage(input_page)
-        with open(output_file, 'wb') as fp:
+        with output_file.open('wb') as fp:
             writer.write(fp)
 
     def get_output_pages(self):
