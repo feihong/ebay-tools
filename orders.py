@@ -64,13 +64,14 @@ def load_orders(json_file):
         # Convert download_time to a datetime object.
         result['download_time'] = util.str_to_local_time(result['download_time'])
 
-        for user_, orders in result['payload'].items():
+        for username, orders in result['payload'].items():
             for order in orders:
                 order['PaidTime'] = util.str_to_local_time(order['PaidTime'])
                 order['items'] = list(get_items(order))
                 order['packing_info'] = util.get_packing_info(order)
                 order['address'] = get_address(order)
                 order['shipping_url'] = get_shipping_url(order)
+                order['username'] = username
 
         return result
 

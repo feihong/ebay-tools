@@ -92,6 +92,11 @@ class ShippingLabelOutputMeta:
     def get_center_line(cls):
         return cls.get_output_info('domestic-center-line', '-  ' * 30)
 
+    @classmethod
+    def get_page_number(cls, num, total):
+        return cls.get_output_info(
+            'page-number', 'Page {} of {}'.format(num, total))
+
 
 ShippingLabelOutputMeta.add_meta(
     type='domestic-top',
@@ -120,6 +125,20 @@ ShippingLabelOutputMeta.add_meta(
     rotate=-90,
     max_len=23,
     max_lines=5,
+)
+ShippingLabelOutputMeta.add_meta(
+    type='username',
+    translate=(45, 760),
+    rotate=0,
+    max_len=50,
+    max_lines=1,
+)
+ShippingLabelOutputMeta.add_meta(
+    type='page-number',
+    translate=(470, 760),
+    rotate=0,
+    max_len=30,
+    max_lines=1,
 )
 
 
@@ -173,10 +192,17 @@ class PackingInfoAdder:
     def get_output_infos(self):
         result = []
 
-        for tracking_numbers in self.get_tracking_numbers_from_pdf():
+        tracking_num_collection = list(self.get_tracking_numbers_from_pdf())
+
+        for i, tracking_numbers in enumerate(tracking_num_collection, 1):
             output_infos = [self._get_output_info(tn) for tn in tracking_numbers]
+
             if len(tracking_numbers) >= 2:
                 output_infos.append(ShippingLabelOutputMeta.get_center_line())
+
+            output_infos.append(
+                ShippingLabelOutputMeta.get_page_number(
+                    i, len(tracking_num_collection)))
             result.append(output_infos)
 
         return result
