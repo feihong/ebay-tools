@@ -162,8 +162,13 @@ def show_users(ctx):
 @task
 def generate_tracking_num_to_order_id(ctx):
     import packingdata
-    packingdata.generate_tracking_num_to_order_id_file(
-        'orders/tracking_num_to_order_id.json')
+    packingdata.generate_tracking_num_to_order_id_file()
+
+
+@task
+def generate_tracking_num_to_packing_info(ctx):
+    import packingdata
+    packingdata.generate_tracking_num_to_packing_info_file()
 
 
 @task

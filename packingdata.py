@@ -154,7 +154,8 @@ def get_shipped_orders():
             yield order
 
 
-def generate_tracking_num_to_order_id_file(output_file):
+def generate_tracking_num_to_order_id_file():
+    output_file = 'orders/tracking_num_to_order_id.json'
     result = collections.defaultdict(list)
 
     for order in get_shipped_orders():
@@ -166,20 +167,38 @@ def generate_tracking_num_to_order_id_file(output_file):
         json.dump(result, fp, indent=2)
 
 
-def get_tracking_number_map(json_file):
-    """
-    Return a dict where the keys are tracking numbers and the values are lists
-    of packing_info strings.
+# def get_tracking_number_map(json_file):
+#     """
+#     Return a dict where the keys are tracking numbers and the values are lists
+#     of packing_info strings.
+#
+#     """
+#     result = collections.defaultdict(list)
+#
+#     for user, orders in load_orders(json_file):
+#         for order in orders:
+#             for tnum in get_tracking_numbers_for_order(order):
+#                 result[tnum].append(order['packing_info'])
+#
+#     return result
 
-    """
-    result = collections.defaultdict(list)
+def generate_tracking_num_to_packing_info_file():
+    output_file = 'orders/tracking_num_to_packing_info.json'
 
-    for user, orders in load_orders(json_file):
-        for order in orders:
-            for tnum in get_tracking_numbers_for_order(order):
-                result[tnum].append(order['packing_info'])
+    # Get order dict keyed by OrderID.
+    orders = dict((o['OrderID'], o) for o in get_shipped_orders())
 
-    return result
+    result = json.load(open('orders/tracking_num_to_order_id.json'))
+    keys = result.keys()
+    for tracking_num in keys:
+        order_ids = result[tracking_num]
+        packing_info = '; '.join(orders[id]['packing_info'] for id in order_ids)
+        result[tracking_num] = packing_info
+
+    with open(output_file, 'w') as fp:
+        json.dump(result, fp, indent=2)
+
+
 
 
 def get_tracking_numbers_for_order(order):
