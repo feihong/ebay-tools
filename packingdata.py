@@ -1,9 +1,11 @@
 import collections
 import textwrap
 import json
+import io
 
 import attr
-from PyPDF2 import PdfFileReader
+from reportlab.pdfgen.canvas import Canvas
+from PyPDF2 import PdfFileReader, PdfFileWriter
 
 import config
 from orders import download_shipped_orders, load_orders
@@ -151,17 +153,25 @@ class PackingInfoAdder:
         with open('orders/tracking_num_to_packing_info.json') as fp:
             self.tn_pi = json.load(fp)
 
+    def write_output_file(self, output_file):
+        writer = PdfFileWriter()
+        for page in self.get_output_pages():
+            writer.addPage(page)
+        with open(output_file, 'wb') as fp:
+            writer.write(fp)
+
     def get_output_pages(self):
-        pass
+        for infos in self.get_output_infos():
+            yield self._get_output_page(infos)
 
     def get_output_infos(self):
         result = []
 
         for tracking_numbers in self.get_tracking_numbers_from_pdf():
             output_infos = [self._get_output_info(tn) for tn in tracking_numbers]
-            result.append(output_infos)
             if len(tracking_numbers) >= 2:
-                result.append(ShippingLabelOutputMeta.get_center_line())
+                output_infos.append(ShippingLabelOutputMeta.get_center_line())
+            result.append(output_infos)
 
         return result
 
@@ -175,7 +185,30 @@ class PackingInfoAdder:
             tracking_num.type, packing_info)
 
     def _get_output_page(self, output_infos):
-        pass
+        inch = 72
+        buf = io.BytesIO()
+        canvas = Canvas(buf, pagesize=(8.5*inch, 11*inch))
+
+        for info in output_infos:
+            canvas.saveState()
+            x, y = info.translate
+            # We flip the y coordinate since that's how PDF programs give us
+            # the number of pixels from the top, not the bottom.
+            y = 11*inch - y
+            canvas.translate(x, y)
+            if info.rotate != 0:
+                canvas.rotate(info.rotate)
+
+            t = canvas.beginText()
+            t.setFont('Courier', 10)
+            t.setTextOrigin(0, 0)
+            t.textLines(info.text)
+            canvas.drawText(t)
+
+            canvas.restoreState()
+
+        canvas.save()
+        return PdfFileReader(buf).getPage(0)
 
 
 def get_shipped_orders():

@@ -186,11 +186,11 @@ def add_packing_data_to_labels(ctx, pdf_file='eBayISAPI.dll.pdf'):
     # packingdata.generate_tracking_num_to_packing_info_file()
     adder = packingdata.PackingInfoAdder(pdf_file)
 
-    for tracking_nums in adder.get_tracking_numbers_from_pdf():
-        print(tracking_nums)
-
-    for output_info in adder.get_output_infos():
-        print(output_info)
+    # for tracking_nums in adder.get_tracking_numbers_from_pdf():
+    #     print(tracking_nums)
+    # for output_info in adder.get_output_infos():
+    #     print(output_info)
+    adder.write_output_file('output.pdf')
 
 
 @task
