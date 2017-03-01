@@ -179,16 +179,16 @@ def add_packing_data_to_labels(ctx, pdf_file='eBayISAPI.dll.pdf'):
 
     """
     pdf_file = '../private-data/ebay/12-labels.pdf'
-    from packingdata import PackingInfoAdder
-    adder = PackingInfoAdder(pdf_file)
+    import packingdata
+    # packingdata.generate_tracking_num_to_order_id_file()
+    # packingdata.generate_tracking_num_to_packing_info_file()
+    adder = packingdata.PackingInfoAdder(pdf_file)
 
     for tracking_nums in adder.get_tracking_numbers_from_pdf():
         print(tracking_nums)
 
-    # for k, v in adder.tn_pi.items():
-    #     print('{} -> {}'.format(k, v))
-    # for pi in adder.get_packing_info():
-    #     print(pi)
+    for output_info in adder.get_output_infos():
+        print(output_info)
 
 
 @task

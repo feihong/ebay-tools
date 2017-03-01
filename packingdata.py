@@ -64,10 +64,13 @@ class ShippingLabelOutputMeta:
     def add_meta(cls, type, **kwargs):
         cls.entries[type] = ShippingLabelOutputMeta(type=type, **kwargs)
 
+    @classmethod
+    def get(cls, type):
+        return cls.entries[type]
+
     @staticmethod
     def get_output_info(type, text):
-        attrname = type.upper().replace('-', '_')
-        meta = getattr(TrackingNumberOutputMeta, attrname)
+        meta = ShippingLabelOutputMeta.get(type)
         text = textwrap.fill(text, meta.max_len)
         return OutputInfo(
             text=text,
@@ -120,32 +123,33 @@ class OutputInfo:
     rotate = attr.ib(default=0)
 
     def __repr__(self):
-        return '{} ({})'.format(self.text, self.overflow)
+        return '{} {}'.format(self.text, self.translate)
 
 
 class PackingInfoAdder:
     def __init__(self, pdf_file):
         self.pdf_file = pdf_file
         self.reader = PdfFileReader(open(pdf_file, 'rb'))
-        self.tn_pi = self.build_tracking_number_packing_info_map()
+        with open('orders/tracking_num_to_packing_info.json') as fp:
+            self.tn_pi = json.load(fp)
 
     def get_output_infos(self):
         result = []
 
-        for tracking_numbers in self.get_tracking_numbers_from_pdf(self):
-            output_infos = [self.get_output_info(tn) for tn in tracking_numbers]
+        for tracking_numbers in self.get_tracking_numbers_from_pdf():
+            output_infos = [self._get_output_info(tn) for tn in tracking_numbers]
             result.append(output_infos)
 
         return result
 
-    def get_output_info(self, tracking_num):
-        meta = OutputInfoMeta.get(tracking_num.key)
-        packing_info = self.tn_pi.get(tracking_num, '')
-        return OutputInfo(meta=meta, value=packing_info)
-
     def get_tracking_numbers_from_pdf(self):
         for page_index in range(0, self.reader.numPages):
             yield get_tracking_numbers_from_page(self.pdf_file, page_index)
+
+    def _get_output_info(self, tracking_num):
+        packing_info = self.tn_pi.get(tracking_num.value, '?')
+        return ShippingLabelOutputMeta.get_output_info(
+            tracking_num.type, packing_info)
 
 
 def get_shipped_orders():
@@ -167,21 +171,6 @@ def generate_tracking_num_to_order_id_file():
         json.dump(result, fp, indent=2)
 
 
-# def get_tracking_number_map(json_file):
-#     """
-#     Return a dict where the keys are tracking numbers and the values are lists
-#     of packing_info strings.
-#
-#     """
-#     result = collections.defaultdict(list)
-#
-#     for user, orders in load_orders(json_file):
-#         for order in orders:
-#             for tnum in get_tracking_numbers_for_order(order):
-#                 result[tnum].append(order['packing_info'])
-#
-#     return result
-
 def generate_tracking_num_to_packing_info_file():
     output_file = 'orders/tracking_num_to_packing_info.json'
 
@@ -197,8 +186,6 @@ def generate_tracking_num_to_packing_info_file():
 
     with open(output_file, 'w') as fp:
         json.dump(result, fp, indent=2)
-
-
 
 
 def get_tracking_numbers_for_order(order):
