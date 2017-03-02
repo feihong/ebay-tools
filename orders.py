@@ -82,7 +82,7 @@ class OrderRequest:
         self.api = Trading(config_file=None, **self.credentials)
 
     def get_orders_awaiting_shipment(self):
-        for order in self.get_orders():
+        for order in self.get_orders(days_back=1):
             # Only yield orders that haven't yet been shipped.
             if 'ShippedTime' not in order:
                 yield order
@@ -96,7 +96,7 @@ class OrderRequest:
     def get_orders(self, days_back=DAYS_BACK):
         self.start = arrow.utcnow().replace(days=-days_back)
         # The API doesn't like time values that it thinks are in the future.
-        self.end = arrow.utcnow().replace(minutes=-2)
+        self.end = arrow.utcnow().replace(minutes=-1)
 
         for page in itertools.count(1):
             response = self._get_orders_for_page(page)

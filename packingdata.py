@@ -232,6 +232,8 @@ class PackingInfoAdder:
 
     def _get_packing_info(self, tracking_num):
         order_info = self.tn_pi.get(tracking_num.value)
+        if order_info is None:
+            raise Exception('No order info found for tracking number {}'.format(tracking_num))
         packing_info = order_info['packing_info']
         return ShippingLabelOutputMeta.get_output_info(
             tracking_num.type, packing_info)
