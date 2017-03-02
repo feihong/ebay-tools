@@ -171,20 +171,17 @@ class OutputInfo:
 
 
 class PackingInfoAdder:
-    def __init__(self, pdf_file):
-        self.pdf_file = pdf_file
-        self.reader = PdfFileReader(open(pdf_file, 'rb'))
+    def __init__(self, pdf_files):
+        self.pdf_files = pdf_files
+        self._set_input_pages()
         with open('orders/tracking_num_to_packing_info.json') as fp:
             self.tn_pi = json.load(fp)
 
     def write_output_file(self, output_file):
         writer = PdfFileWriter()
-        input_pages = (
-            self.reader.getPage(i)
-            for i in range(self.reader.numPages))
         output_pages = self.get_output_pages()
 
-        for input_page, output_page in zip(input_pages, output_pages):
+        for input_page, output_page in zip(self.input_pages, output_pages):
             input_page.mergePage(output_page)
             writer.addPage(input_page)
         with output_file.open('wb') as fp:
@@ -197,7 +194,7 @@ class PackingInfoAdder:
     def get_output_infos(self):
         result = []
 
-        tracking_num_collection = list(self.get_tracking_numbers_from_pdf())
+        tracking_num_collection = list(self.get_tracking_numbers_from_pdfs())
         page_count = len(tracking_num_collection)
         label_count = sum(len(lst) for lst in tracking_num_collection)
 
@@ -218,9 +215,20 @@ class PackingInfoAdder:
 
         return result
 
-    def get_tracking_numbers_from_pdf(self):
-        for page_index in range(0, self.reader.numPages):
-            yield get_tracking_numbers_from_page(self.pdf_file, page_index)
+    def get_tracking_numbers_from_pdfs(self):
+        for page_count, pdf_file in zip(self.page_counts, self.pdf_files):
+            for i in range(page_count):
+                yield get_tracking_numbers_from_page(pdf_file, i)
+
+    def _set_input_pages(self):
+        self.input_pages = []
+        self.page_counts = []
+
+        for pdf_file in self.pdf_files:
+            reader = PdfFileReader(pdf_file.open('rb'))
+            self.page_counts.append(reader.numPages)
+            for page_index in range(0, reader.numPages):
+                self.input_pages.append(reader.getPage(page_index))
 
     def _get_packing_info(self, tracking_num):
         order_info = self.tn_pi.get(tracking_num.value)
@@ -359,7 +367,7 @@ def get_text_for_bbox(pdf_file, page_index, bbox):
 
     cmd = [
         'pdftotext',
-        pdf_file,
+        str(pdf_file),
         '-f', page_num,    # first page
         '-l', page_num,    # last page
         # Crop parameters
