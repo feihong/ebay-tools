@@ -6,6 +6,8 @@ config_local.py
 orders/*.html
 orders/*.json
 
-*.csv
 service_account_key.json
+
+*.csv
 *.pdf
+*.txt

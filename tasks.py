@@ -8,6 +8,7 @@ import arrow
 
 import config
 import util
+from misc_tasks import *
 
 
 @task
@@ -201,10 +202,6 @@ def add_packing_data_to_labels(ctx, pdf_files=None):
     packingdata.generate_tracking_num_to_packing_info_file()
     adder = packingdata.PackingInfoAdder(pdf_files)
 
-    # for tracking_nums in adder.get_tracking_numbers_from_pdfs():
-    #     print(tracking_nums)
-    # for output_info in adder.get_output_infos():
-    #     print(output_info)
     filename = '{:%Y-%m-%d %H%M}-packing.pdf'.format(datetime.now())
     output_file = Path(filename)
     adder.write_output_file(output_file)

@@ -81,7 +81,7 @@ def get_item_metadata_map():
 
     """
     result = {}
-    with (here / 'ebay_items.csv').open() as fp:
+    with (here / 'item_location.csv').open() as fp:
         for row in csv.DictReader(fp):
             model = row['Model'].lower()
             result[model] = row
