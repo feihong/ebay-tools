@@ -6,7 +6,6 @@ config_local.py
 orders/*.html
 orders/*.json
 
-ebay_items.csv
-item_model.csv
+*.csv
 service_account_key.json
 *.pdf

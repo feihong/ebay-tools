@@ -151,6 +151,16 @@ def download_item_model_data(ctx):
 
 
 @task
+def download_item_shipping_data(ctx):
+    """
+    Download item's shipping data to item_shipping.csv.
+
+    """
+    import items
+    items.download_item_shipping_data('item_shipping.csv')
+
+
+@task
 def show_users(ctx):
     """
     Show all users from the config file.

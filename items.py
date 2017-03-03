@@ -18,9 +18,6 @@ def download_item_model_data(csv_file):
     }))
     items.sort(key=lambda x: x['model'])
 
-    # util.write_json(items, 'orders/temp_items.json')
-    # items = util.read_json('orders/temp_items.json')
-
     with open(csv_file, 'w') as fp:
         fieldnames = ['model', 'item_id', 'title', 'user']
         writer = csv.DictWriter(fp, fieldnames=fieldnames)
@@ -34,7 +31,42 @@ def download_item_model_data(csv_file):
             )
             writer.writerow(row)
 
-    print('Wrote {} items to {}'.format(len(items), csv_file))
+    print('Wrote {} rows to {}'.format(len(items), csv_file))
+
+
+def download_item_shipping_data(csv_file):
+    items = list(get_items({
+        'IncludeItemSpecifics': True,
+        'OutputSelector': [
+            'Item.Title',
+            'Item.ItemSpecifics.NameValueList',
+            'Item.ShippingPackageDetails',
+            'Item.ShippingDetails',
+        ]
+    }))
+    items.sort(key=lambda x: x['model'])
+
+    # util.write_json(items, 'orders/temp_items.json')
+    # items = util.read_json('orders/temp_items.json')
+
+    with open(csv_file, 'w') as fp:
+        fieldnames = ['user', 'model', 'title', 'url', 'weight',
+            'domestic_shipping', 'intl_shipping']
+        writer = csv.DictWriter(fp, fieldnames=fieldnames)
+        writer.writeheader()
+        for item in items:
+            row = dict(
+                user=item['user'],
+                model=item['model'],
+                title=item['Title'],
+                url='http://ebay.com/itm/' + item['item_id'],
+                weight=get_weight(item),
+                domestic_shipping=get_domestic_shipping(item),
+                intl_shipping=get_intl_shipping(item),
+            )
+            writer.writerow(row)
+
+    print('Wrote {} rows to {}'.format(len(items), csv_file))
 
 
 def get_items(params):
@@ -97,3 +129,29 @@ def get_model(item):
         if spec['Name'] == 'Model'
     ]
     return model[0]
+
+
+def get_weight(item):
+    spd = item['ShippingPackageDetails']
+    lb = int(spd['WeightMajor']['value'])
+    oz = int(spd['WeightMinor']['value'])
+    if lb > 0:
+        return '{},{}'.format(lb, oz)
+    else:
+        return '{}'.format(oz)
+
+
+def get_domestic_shipping(item):
+    sd = item['ShippingDetails']
+    return sd['ShippingServiceOptions']['ShippingService']
+
+
+def get_intl_shipping(item):
+    sd = item['ShippingDetails']
+    options = sd.get('InternationalShippingServiceOption')
+    if options is not None:
+        for option in sd['InternationalShippingServiceOption']:
+            if option['ShipToLocation'] == 'CA':
+                return option['ShippingService']
+    else:
+        return ''
