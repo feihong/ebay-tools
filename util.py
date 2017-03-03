@@ -1,6 +1,7 @@
 from pathlib import Path
 from pprint import pprint
 import csv
+import json
 
 import arrow
 import requests
@@ -126,3 +127,13 @@ def get_packing_info(order):
         result.append(text)
 
     return ', '.join(result)
+
+
+def write_json(obj, json_file):
+    with open(json_file, 'w') as fp:
+        json.dump(obj, fp, indent=2)
+
+
+def read_json(json_file):
+    with open(json_file) as fp:
+        return json.load(fp)
