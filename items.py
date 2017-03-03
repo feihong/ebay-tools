@@ -135,10 +135,7 @@ def get_weight(item):
     spd = item['ShippingPackageDetails']
     lb = int(spd['WeightMajor']['value'])
     oz = int(spd['WeightMinor']['value'])
-    if lb > 0:
-        return '{},{}'.format(lb, oz)
-    else:
-        return '{}'.format(oz)
+    return 16 * lb + oz
 
 
 def get_domestic_shipping(item):
