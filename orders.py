@@ -96,7 +96,7 @@ class OrderRequest:
     def get_orders(self, days_back=DAYS_BACK):
         self.start = arrow.utcnow().replace(days=-days_back)
         # The API doesn't like time values that it thinks are in the future.
-        self.end = arrow.utcnow().replace(minutes=-1)
+        self.end = arrow.utcnow().replace(seconds=-10)
 
         for page in itertools.count(1):
             response = self._get_orders_for_page(page)

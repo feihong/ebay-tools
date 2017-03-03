@@ -183,8 +183,9 @@ def add_packing_data_to_labels(ctx, pdf_files=None):
     pdf_files = [f for f in Path('.').glob(glob)
         if not f.name.endswith('-packing.pdf')]
 
-    # import orders
-    # orders.download_shipped_orders()
+    import orders
+    orders.download_shipped_orders()
+
     import packingdata
     packingdata.generate_tracking_num_to_order_id_file()
     packingdata.generate_tracking_num_to_packing_info_file()
