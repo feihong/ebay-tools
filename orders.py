@@ -82,13 +82,13 @@ class OrderRequest:
         self.api = Trading(config_file=None, **self.credentials)
 
     def get_orders_awaiting_shipment(self):
-        for order in self.get_orders(days_back=1):
+        for order in self.get_orders(days_back=2):
             # Only yield orders that haven't yet been shipped.
             if 'ShippedTime' not in order:
                 yield order
 
     def get_shipped_orders(self):
-        for order in self.get_orders(days_back=1):
+        for order in self.get_orders(days_back=2):
             # Only yield orders that have been shipped.
             if 'ShippedTime' in order:
                 yield order
