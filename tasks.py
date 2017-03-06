@@ -193,6 +193,7 @@ def add_packing_data_to_labels(ctx, pdf_files=None):
     glob = '*.pdf' if pdf_files is None else pdf_files
     pdf_files = [f for f in Path('.').glob(glob)
         if not f.name.endswith('-packing.pdf')]
+    print('Input files: {}'.format(pdf_files))
 
     import orders
     orders.download_shipped_orders()

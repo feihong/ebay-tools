@@ -202,7 +202,9 @@ class PackingInfoAdder:
             output_infos = [self._get_packing_info(tn)
                 for tn in tracking_numbers]
 
-            output_infos.append(self._get_username(tracking_numbers[0]))
+            if len(tracking_numbers) != 0:
+                # Probably an irregular foreign shipping label (e.g. > 4 lbs).
+                output_infos.append(self._get_username(tracking_numbers[0]))
 
             output_infos.append(
                 ShippingLabelOutputMeta.get_page_number(
