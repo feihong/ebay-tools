@@ -209,6 +209,17 @@ def add_packing_data_to_labels(ctx, pdf_files=None):
 
 
 @task
+def download_csv_files(ctx):
+    """
+    Download the latest versions of item_location.csv and item_model.csv from
+    Google Drive.
+
+    """
+    import gsheet
+    gsheet.download_csv_files()
+
+
+@task
 def web(ctx):
     """
     Run the web app.

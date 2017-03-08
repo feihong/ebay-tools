@@ -3,6 +3,7 @@ attr
 boto3
 clint
 ebaysdk
+gspread
 Invoke
 muffin-playground
 oauth2client==3.0.0
