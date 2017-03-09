@@ -6,6 +6,7 @@ import io
 import attr
 from reportlab.pdfgen.canvas import Canvas
 from PyPDF2 import PdfFileReader, PdfFileWriter
+from PyPDF2.pdf import PageObject
 
 import config
 from orders import download_shipped_orders, load_orders
@@ -233,7 +234,14 @@ class PackingInfoAdder:
             reader = PdfFileReader(pdf_file.open('rb'))
             self.page_counts.append(reader.numPages)
             for page_index in range(0, reader.numPages):
-                self.input_pages.append(reader.getPage(page_index))
+                page = reader.getPage(page_index)
+                height = page.mediaBox[3]
+                if height == (5.5 * 72):
+                    # This is a half-size page, so make it full size.
+                    page2 = get_blank_page()
+                    page2.mergeTranslatedPage(page, tx=0, ty=5.5*72)
+                    page = page2
+                self.input_pages.append(page)
 
     def _get_packing_info(self, tracking_num):
         order_info = self.tn_pi.get(tracking_num.value)
@@ -388,3 +396,8 @@ def get_text_for_bbox(pdf_file, page_index, bbox):
     result = subprocess.check_output(cmd)
     result = result.decode('utf-8')
     return result.strip().replace(' ', '')      # get rid of all extraneous spaces
+
+
+def get_blank_page():
+    inch = 72
+    return PageObject.createBlankPage(width=8.5*inch, height=11*inch)
