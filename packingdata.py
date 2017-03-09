@@ -133,14 +133,14 @@ ShippingLabelOutputMeta.add_meta(
 )
 ShippingLabelOutputMeta.add_meta(
     type='username',
-    translate=(45, 760),
+    translate=(45, 767),
     rotate=0,
     max_len=50,
     max_lines=1,
 )
 ShippingLabelOutputMeta.add_meta(
     type='page-number',
-    translate=(430, 760),
+    translate=(430, 767),
     rotate=0,
     max_len=30,
     max_lines=1,
@@ -171,9 +171,10 @@ class OutputInfo:
 
 
 class PackingInfoAdder:
-    def __init__(self, pdf_files):
+    def __init__(self, pdf_files, label_count=None):
         self.pdf_files = pdf_files
         self._set_input_pages()
+        self.label_count = label_count
         with open('orders/tracking_num_to_packing_info.json') as fp:
             self.tn_pi = json.load(fp)
 
@@ -196,7 +197,9 @@ class PackingInfoAdder:
 
         tracking_num_collection = list(self.get_tracking_numbers_from_pdfs())
         page_count = len(tracking_num_collection)
-        label_count = sum(len(lst) for lst in tracking_num_collection)
+        label_count = self.label_count
+        if label_count is None:
+            label_count = sum(len(lst) for lst in tracking_num_collection)
 
         for i, tracking_numbers in enumerate(tracking_num_collection, 1):
             output_infos = [self._get_packing_info(tn)

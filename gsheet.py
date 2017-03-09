@@ -17,7 +17,7 @@ def download_csv_files():
     spreadsheet = client.open('ebay items')
     worksheet_names = ['item_model', 'item_location']
     for name in worksheet_names:
-        path = Path(name + '_test.csv')
+        path = Path(name + '.csv')
         print('Writing {}'.format(path))
         worksheet = spreadsheet.worksheet(name)
 
