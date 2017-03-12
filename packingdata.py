@@ -231,7 +231,8 @@ class PackingInfoAdder:
         self.page_counts = []
 
         for pdf_file in self.pdf_files:
-            reader = PdfFileReader(pdf_file.open('rb'))
+            # EBay label PDFs are a bit weird, so set strict to False.
+            reader = PdfFileReader(pdf_file.open('rb'), strict=False)
             self.page_counts.append(reader.numPages)
             for page_index in range(0, reader.numPages):
                 page = reader.getPage(page_index)
