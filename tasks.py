@@ -212,6 +212,14 @@ def add_packing_data_to_labels(ctx, pdf_files=None, download_orders=True,
 
 
 @task
+def test_get_tracking_numbers(ctx):
+    from trackingnumber import TrackingNumberExtractor
+    extractor = TrackingNumberExtractor('.')
+    for tn in extractor.get_tracking_numbers():
+        print(tn)
+
+
+@task
 def download_csv_files(ctx):
     """
     Download the latest versions of item_location.csv and item_model.csv from
