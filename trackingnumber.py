@@ -55,7 +55,7 @@ TrackingNumberReadMeta.add_meta(
 class TrackingNumberExtractor:
     def __init__(self, dir_path):
         dir_path = Path(dir_path)
-        self.input_files = self._get_input_files(dir_path)
+        self.input_files = list(self._get_input_files(dir_path))
 
         mesg = ', '.join(str(f) for f in self.input_files)
         print('Input files: ' + mesg)
@@ -64,6 +64,7 @@ class TrackingNumberExtractor:
         for pdf_file in self.input_files:
             for page in get_all_html_pages_for_pdf(pdf_file):
                 for elem in page.get_p_elements():
+                    print(elem)
                     coords = self._get_coords(elem)
                     meta = TrackingNumberReadMeta.get(coords)
                     if meta is not None:
@@ -87,8 +88,8 @@ class PdfPage:
 
     """
     def __init__(self, html, rotated_html):
-        self.doc = PyQuery(html)
-        self.rotated_doc = PyQuery(rotated_html)
+        self.doc = PyQuery(remove_html_namespace(html))
+        self.rotated_doc = PyQuery(remove_html_namespace(rotated_html))
 
     def get_p_elements(self):
         yield from self.doc('p')
@@ -98,7 +99,7 @@ class PdfPage:
 def get_all_html_pages_for_pdf(pdf_file):
     html_seq = get_html_pages_for_pdf(pdf_file)
     rotated_pdf_file = create_rotated_pdf(pdf_file)
-    rotated_html_seq = get_html_pages_for_pdf(pdf_file)
+    rotated_html_seq = get_html_pages_for_pdf(rotated_pdf_file)
     for html, rotated_html in zip(html_seq, rotated_html_seq):
         yield PdfPage(html, rotated_html)
 
@@ -110,7 +111,7 @@ def get_html_pages_for_pdf(pdf_file):
             'pdftohtml', '-c', str(pdf_file), str(dirpath / 'output.html')]
         subprocess.check_call(cmd)
         for html_file in dirpath.glob('*.html'):
-            if re.match(r'-\d+\.html$', html_file.name):
+            if re.search(r'-\d+\.html$', html_file.name):
                 yield html_file.read_text()
 
 
@@ -120,10 +121,10 @@ def create_rotated_pdf(pdf_file):
     the output file. The output file will be generated in a temp directory.
 
     """
-    reader = PdfFileReader(pdf_file.open('rb'))
+    reader = PdfFileReader(pdf_file.open('rb'), strict=False)
     pages = (reader.getPage(i) for i in range(reader.numPages))
 
-    tmpfile = tempfile.mkstemp()
+    handle, tmpfile = tempfile.mkstemp(suffix='.pdf')
     with open(tmpfile, 'wb') as fp:
         writer = PdfFileWriter()
         for page in pages:
@@ -132,3 +133,8 @@ def create_rotated_pdf(pdf_file):
         writer.write(fp)
 
     return tmpfile
+
+
+def remove_html_namespace(html):
+    return html.replace(
+        'xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang=""', '')
