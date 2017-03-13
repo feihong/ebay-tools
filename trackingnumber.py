@@ -8,7 +8,7 @@ from pyquery import PyQuery
 from PyPDF2 import PdfFileWriter, PdfFileReader
 
 
-@attr.s
+@attr.s(repr=False)
 class TrackingNumberReadMeta:
     """
     This class stores the bounding box for a particular type of tracking number.
@@ -23,11 +23,14 @@ class TrackingNumberReadMeta:
     @classmethod
     def add_meta(cls, type, coords):
         s_coords = (str(coords[0]), str(coords[1]))
-        cls.entries[coords] = TrackingNumberReadMeta(type=type, coords=s_coords)
+        cls.entries[s_coords] = TrackingNumberReadMeta(type=type, coords=coords)
 
     @classmethod
     def get(cls, coords):
         return cls.entries.get(coords)
+
+    def __repr__(self):
+        return 'TrackingNumberReadMeta<{}>'.format(self.type)
 
 
 TrackingNumberReadMeta.add_meta(
@@ -48,7 +51,7 @@ TrackingNumberReadMeta.add_meta(
 )
 TrackingNumberReadMeta.add_meta(
     type='single-foreign',
-    coords=(0, 0),      # need to fill out
+    coords=(1, 1),      # need to fill out
 )
 
 
@@ -64,11 +67,11 @@ class TrackingNumberExtractor:
         for pdf_file in self.input_files:
             for page in get_all_html_pages_for_pdf(pdf_file):
                 for elem in page.get_p_elements():
-                    print(elem)
                     coords = self._get_coords(elem)
                     meta = TrackingNumberReadMeta.get(coords)
                     if meta is not None:
-                        yield meta, elem.text_content()
+                        text = PyQuery(elem).text().replace('\xa0', '')
+                        yield meta, text
 
     def _get_input_files(self, dir_path):
         for pdf_file in dir_path.glob('*.pdf'):
@@ -78,7 +81,8 @@ class TrackingNumberExtractor:
     def _get_coords(self, elem):
         text = elem.get('style')
         match = re.search(r'top:(\d+)px;left:(\d+)px;', text)
-        return match.groups()
+        top, left = match.groups()
+        return left, top
 
 
 class PdfPage:
