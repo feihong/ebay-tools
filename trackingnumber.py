@@ -55,6 +55,15 @@ TrackingNumberReadMeta.add_meta(
 )
 
 
+@attr.s(repr=False)
+class TrackingNumber:
+    type = attr.ib(default='')
+    value = attr.ib(default='')
+
+    def __repr__(self):
+        return '{}:{}'.format(self.type, self.value)
+
+
 class TrackingNumberExtractor:
     def __init__(self, dir_path):
         dir_path = Path(dir_path)
@@ -66,12 +75,18 @@ class TrackingNumberExtractor:
     def get_tracking_numbers(self):
         for pdf_file in self.input_files:
             for page in get_all_html_pages_for_pdf(pdf_file):
+                # Yield a list of tracking numbers for each page.
+                page_results = []
                 for elem in page.get_p_elements():
                     coords = self._get_coords(elem)
                     meta = TrackingNumberReadMeta.get(coords)
                     if meta is not None:
                         text = PyQuery(elem).text().replace('\xa0', '')
-                        yield meta, text
+                        page_results.append(
+                            TrackingNumber(type=meta.type, value=text)
+                        )
+
+                yield page_results
 
     def _get_input_files(self, dir_path):
         for pdf_file in dir_path.glob('*.pdf'):
