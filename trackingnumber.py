@@ -155,5 +155,10 @@ def create_rotated_pdf(pdf_file):
 
 
 def remove_html_namespace(html):
+    """
+    Removing the namespace from the HTML will allow PyQuery to use css
+    selector queries.
+
+    """
     return html.replace(
         'xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang=""', '')
