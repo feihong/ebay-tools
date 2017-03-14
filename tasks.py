@@ -220,6 +220,12 @@ def test_get_tracking_numbers(ctx):
 
 
 @task
+def test_generate_simple_orders_file(ctx):
+    from trackingnumber.mapper import generate_simple_orders_file
+    generate_simple_orders_file()
+
+
+@task
 def download_csv_files(ctx):
     """
     Download the latest versions of item_location.csv and item_model.csv from
