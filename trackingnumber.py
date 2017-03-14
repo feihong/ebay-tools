@@ -55,10 +55,25 @@ TrackingNumberReadMeta.add_meta(
 )
 
 
-@attr.s(repr=False)
 class TrackingNumber:
     type = attr.ib(default='')
     value = attr.ib(default='')
+
+    def __init__(self, type, value):
+        self.type = type
+
+        prefix = 'USPSTRACKING#'
+        if value.startswith(prefix):
+            value = value[len(prefix):].strip()
+        self.value = value
+
+        if 'domestic' in type and not re.match(r'\d{22}', value):
+            mesg = '{} is not a valid domestic tracking number'.format(value)
+            raise Exception(mesg)
+
+        if 'foreign' in type and not re.match(r'[A-Z]{2}\d{9}US', value):
+            mesg = '{} is not a valid foreign tracking number'.format(value)
+            raise Exception(mesg)
 
     def __repr__(self):
         return '{}:{}'.format(self.type, self.value)
@@ -83,8 +98,7 @@ class TrackingNumberExtractor:
                     if meta is not None:
                         text = PyQuery(elem).text().replace('\xa0', '')
                         page_results.append(
-                            TrackingNumber(type=meta.type, value=text)
-                        )
+                            TrackingNumber(type=meta.type, value=text))
 
                 yield page_results
 
