@@ -59,7 +59,8 @@ class TrackingNumberMapper:
             tracking_number)
 
         if not orders:
-            return None
+            mesg = 'Found no orders linked to tracking number {}'.format(tracking_number)
+            raise Exception(mesg)
 
         return dict(
             packing_info='; '.join(o['packing_info'] for o in orders),

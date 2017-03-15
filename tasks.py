@@ -224,6 +224,9 @@ def test_write_packing_info_to_labels(ctx, skip_download=False,
         import orders
         orders.download_shipped_orders()
 
+    # from trackingnumber import mapper
+    # mapper.generate_simple_orders_file()
+
     from packinginfo import PackingInfoWriter
     writer = PackingInfoWriter(
         label_count=label_count,
