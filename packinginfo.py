@@ -67,13 +67,6 @@ OutputMeta.add_meta(
     max_lines=2,
 )
 OutputMeta.add_meta(
-    type='bulk-domestic-center-line',
-    translate=(45, 397),
-    rotate=0,
-    max_len=None,
-    max_lines=None,
-)
-OutputMeta.add_meta(
     type='bulk-foreign',
     translate=(537, 143),
     rotate=-90,
@@ -88,6 +81,13 @@ OutputMeta.add_meta(
     max_lines=2,
 )
 OutputMeta.add_meta(
+    type='bulk-domestic-center-line',
+    translate=(45, 397),
+    rotate=0,
+    max_len=None,
+    max_lines=None,
+)
+OutputMeta.add_meta(
     type='username',
     translate=(45, 767),
     rotate=0,
@@ -100,6 +100,27 @@ OutputMeta.add_meta(
     rotate=0,
     max_len=30,
     max_lines=1,
+)
+OutputMeta.add_meta(
+    type='bulk-domestic-top-notes',
+    translate=(100, 347),
+    rotate=0,
+    max_len=73,
+    max_lines=3,
+)
+OutputMeta.add_meta(
+    type='bulk-domestic-bottom-notes',
+    translate=(100, 425),
+    rotate=0,
+    max_len=73,
+    max_lines=3,
+)
+OutputMeta.add_meta(
+    type='bulk-foreign-notes',
+    translate=(75, 645),
+    rotate=0,
+    max_len=79,
+    max_lines=3,
 )
 
 
@@ -129,14 +150,15 @@ def get_username(text):
 
 
 class PackingInfoWriter:
-    def __init__(self, label_count=None):
+    def __init__(self, label_count=None, simple_orders_file=None):
         self.label_count = label_count
         self.extractor = TrackingNumberExtractor('.')
         self._set_input_pages()
-        self.mapper = TrackingNumberMapper()
+        self.mapper = TrackingNumberMapper(simple_orders_file)
 
-    def write_output_file(self):
-        output_file = '{:%Y-%m-%d %H%M}-packing.pdf'.format(datetime.now())
+    def write_output_file(self, output_file=None):
+        if output_file is None:
+            output_file = '{:%Y-%m-%d %H%M}-packing.pdf'.format(datetime.now())
 
         writer = PdfFileWriter()
         output_pages = self.get_output_pages()
@@ -201,7 +223,8 @@ class PackingInfoWriter:
 
             notes = output['notes']
             if notes:
-                yield OutputMeta.get_output_info(tn.type + '-notes', notes)
+                yield OutputMeta.get_output_info(
+                    tn.type + '-notes', 'Notes: ' + notes)
 
     def _get_username(self, tracking_numbers):
         for tn in tracking_numbers:
@@ -235,7 +258,6 @@ class PackingInfoWriter:
 
         canvas.save()
         return PdfFileReader(buf).getPage(0)
-
 
 
 def get_blank_page():

@@ -10,7 +10,7 @@ class TrackingNumberMapper:
     Maps tracking numbers to output info.
 
     """
-    def __init__(self):
+    def __init__(self, simple_orders_file=None):
         self.db = Database()
         self.db.executescript("""
         create table orders(
@@ -26,7 +26,11 @@ class TrackingNumberMapper:
         );
         """)
 
-        orders = get_simple_orders()
+        if simple_orders_file is None:
+            orders = get_simple_orders()
+        else:
+            orders = json.load(open(simple_orders_file))
+
         self.add_orders(orders)
 
     def add_orders(self, orders):
