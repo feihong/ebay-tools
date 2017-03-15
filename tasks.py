@@ -215,14 +215,19 @@ def add_packing_data_to_labels(ctx, pdf_files=None, download_orders=True,
 def test_get_tracking_numbers(ctx):
     from trackingnumber import TrackingNumberExtractor
     extractor = TrackingNumberExtractor('.')
-    for tn in extractor.get_tracking_numbers():
-        print(tn)
+    for tn_list in extractor.get_tracking_numbers():
+        print(tn_list)
 
 
 @task
-def test_generate_simple_orders_file(ctx):
-    from trackingnumber.mapper import generate_simple_orders_file
-    generate_simple_orders_file()
+def test_get_output_infos(ctx):
+    from trackingnumber import TrackingNumberExtractor, TrackingNumberMapper
+    mapper = TrackingNumberMapper()
+
+    for tracking_numbers in TrackingNumberExtractor('.').get_tracking_numbers():
+        for tn in tracking_numbers:
+            print(tn)
+            print(mapper.get_output(tn.value))
 
 
 @task

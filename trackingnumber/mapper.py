@@ -10,20 +10,23 @@ class TrackingNumberMapper:
     Maps tracking numbers to output info.
 
     """
-    def __init__(self, orders):
+    def __init__(self):
         self.db = Database()
         self.db.executescript("""
         create table orders(
-            order_id string,
-            packing_info string,
-            username string,
-            buyer string
+            order_id text,
+            packing_info text,
+            username text,
+            buyer text
         );
         create table order_tracking(
-            order_id string,
-            tracking_number string
+            order_id text,
+            tracking_number text,
+            primary key(order_id, tracking_number)
         );
         """)
+
+        orders = get_simple_orders()
         self.add_orders(orders)
 
     def add_orders(self, orders):
@@ -32,13 +35,18 @@ class TrackingNumberMapper:
                 'insert into orders ({fields}) values (?, ?, ?, ?)',
                 ['order_id', 'packing_info', 'username', 'buyer'],
                 order)
-            for tracking_num in order['tracking_numbers']:
-                self.db.execute(
-                    'insert into order_tracking ({fields}) values (?, ?)',
-                    ['order_id', 'tracking_number'],
-                    [order['order_id'], tracking_num])
 
-    def get_output(tracking_number):
+            for tracking_num in order['tracking_numbers']:
+                try:
+                    self.db.execute(
+                        'insert into order_tracking ({fields}) values (?, ?)',
+                        ['order_id', 'tracking_number'],
+                        [order['order_id'], tracking_num])
+                except Exception as ex:
+                    print(ex)
+                    import ipdb; ipdb.set_trace()
+
+    def get_output(self, tracking_number):
         orders = self.db.select("""
             select {fields} from orders
             where order_id in (select order_id from order_tracking
@@ -52,24 +60,23 @@ class TrackingNumberMapper:
         return dict(
             packing_info='; '.join(o['packing_info'] for o in orders),
             username=orders[0]['username'],
-            notes=get_notes(orders))
+            notes=self._get_notes(orders))
 
+    def _get_notes(self, orders):
+        buyer = orders[0]['buyer']
+        other_orders = self.db.select("""
+            select packing_info from orders
+            where buyer = ?
+            and order_id not in (select order_id from order_tracking)""",
+            (),
+            buyer)
 
-def get_notes(orders):
-    buyer = orders[0]['buyer']
-    other_orders = select("""
-        select packing_info from orders
-        where buyer = ?
-        and order_id not in (select order_id from order_tracking)""",
-        (),
-        buyer)
-
-    if other_orders:
-        stuff = '; '.join(r[0] for r in other_orders)
-        return 'Buyer {buyer} also bought {stuff}'.format(
-            buyer=buyer, stuff=stuff)
-    else:
-        return None
+        if other_orders:
+            stuff = '; '.join(r[0] for r in other_orders)
+            return 'Buyer {buyer} also bought {stuff}'.format(
+                buyer=buyer, stuff=stuff)
+        else:
+            return None
 
 
 def get_shipped_orders():
@@ -78,7 +85,7 @@ def get_shipped_orders():
             yield order
 
 
-def generate_simple_orders_file():
+def get_simple_orders():
     result = []
     for order in get_shipped_orders():
         result.append(dict(
@@ -88,8 +95,12 @@ def generate_simple_orders_file():
             buyer=order['BuyerUserID'],
             tracking_numbers=list(get_tracking_numbers_for_order(order)),
         ))
+    return result
 
+
+def generate_simple_orders_file():
     with open('orders/shipped_orders_simple.json', 'w') as fp:
+        result = get_simple_orders()
         json.dump(result, fp, indent=2)
 
 
