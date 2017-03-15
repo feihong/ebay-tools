@@ -218,9 +218,15 @@ def generate_simple_orders_file(ctx):
 
 
 @task
-def test_write_packing_info_to_labels(ctx):
+def test_write_packing_info_to_labels(ctx, skip_download=False,
+                                      label_count=None):
+    if not skip_download:
+        import orders
+        orders.download_shipped_orders()
+
     from packinginfo import PackingInfoWriter
     writer = PackingInfoWriter(
+        label_count=label_count,
         # simple_orders_file='orders/shipped_orders_simple.json'
     )
     writer.write_output_file()
