@@ -106,14 +106,14 @@ OutputMeta.add_meta(
     translate=(100, 347),
     rotate=0,
     max_len=73,
-    max_lines=3,
+    max_lines=2,
 )
 OutputMeta.add_meta(
     type='bulk-domestic-bottom-notes',
-    translate=(100, 425),
+    translate=(100, 740),
     rotate=0,
     max_len=73,
-    max_lines=3,
+    max_lines=2,
 )
 OutputMeta.add_meta(
     type='bulk-foreign-notes',
