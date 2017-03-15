@@ -1,4 +1,13 @@
+from datetime import datetime
+import textwrap
+import io
+
 import attr
+from reportlab.pdfgen.canvas import Canvas
+from PyPDF2 import PdfFileReader, PdfFileWriter
+from PyPDF2.pdf import PageObject
+
+from trackingnumber import TrackingNumberExtractor, TrackingNumberMapper
 
 
 @attr.s
@@ -106,7 +115,7 @@ class OutputInfo:
 
 
 def get_center_line():
-    return OutputMeta.get_output_info('domestic-center-line', '-  ' * 30)
+    return OutputMeta.get_output_info('bulk-domestic-center-line', '-  ' * 30)
 
 
 def get_page_number(num, total, label_count):
@@ -117,3 +126,118 @@ def get_page_number(num, total, label_count):
 
 def get_username(text):
     return OutputMeta.get_output_info('username', 'User: {}'.format(text))
+
+
+class PackingInfoWriter:
+    def __init__(self, label_count=None):
+        self.label_count = label_count
+        self.extractor = TrackingNumberExtractor('.')
+        self._set_input_pages()
+        self.mapper = TrackingNumberMapper()
+
+    def write_output_file(self):
+        output_file = '{:%Y-%m-%d %H%M}-packing.pdf'.format(datetime.now())
+
+        writer = PdfFileWriter()
+        output_pages = self.get_output_pages()
+
+        for input_page, output_page in zip(self.input_pages, output_pages):
+            input_page.mergePage(output_page)
+            writer.addPage(input_page)
+
+        with open(output_file, 'wb') as fp:
+            writer.write(fp)
+        print('Wrote output to ' + output_file)
+
+    def get_output_pages(self):
+        for infos in self.get_output_infos():
+            yield self._get_output_page(infos)
+
+    def get_output_infos(self):
+        result = []
+
+        tracking_num_collection = list(self.extractor.get_tracking_numbers())
+        page_count = len(tracking_num_collection)
+        label_count = self.label_count
+        if label_count is None:
+            label_count = sum(len(lst) for lst in tracking_num_collection)
+
+        for i, tracking_numbers in enumerate(tracking_num_collection, 1):
+            output_infos = list(self._get_output_infos(tracking_numbers))
+
+            username = self._get_username(tracking_numbers)
+            if username:
+                output_infos.append(get_username(username))
+
+            output_infos.append(get_page_number(i, page_count, label_count))
+
+            if len(tracking_numbers) >= 2:
+                output_infos.append(get_center_line())
+
+            result.append(output_infos)
+
+        return result
+
+    def _set_input_pages(self):
+        self.input_pages = []
+
+        for pdf_file in self.extractor.input_files:
+            # EBay label PDFs are a bit weird, so set strict to False.
+            reader = PdfFileReader(pdf_file.open('rb'), strict=False)
+            for page_index in range(0, reader.numPages):
+                page = reader.getPage(page_index)
+                height = page.mediaBox[3]
+                if height == (5.5 * 72):
+                    # This is a half-size page, so make it full size.
+                    page2 = get_blank_page()
+                    page2.mergeTranslatedPage(page, tx=0, ty=5.5*72)
+                    page = page2
+                self.input_pages.append(page)
+
+    def _get_output_infos(self, tracking_numbers):
+        for tn in tracking_numbers:
+            output = self.mapper.get_output(tn.value)
+            yield OutputMeta.get_output_info(tn.type, output['packing_info'])
+
+            notes = output['notes']
+            if notes:
+                yield OutputMeta.get_output_info(tn.type + '-notes', notes)
+
+    def _get_username(self, tracking_numbers):
+        for tn in tracking_numbers:
+            output = self.mapper.get_output(tn.value)
+            return output['username']
+
+        return None
+
+    def _get_output_page(self, output_infos):
+        inch = 72
+        buf = io.BytesIO()
+        canvas = Canvas(buf, pagesize=(8.5*inch, 11*inch))
+
+        for info in output_infos:
+            canvas.saveState()
+            x, y = info.translate
+            # We flip the y coordinate since that's how PDF programs give us
+            # the number of pixels from the top, not the bottom.
+            y = 11*inch - y
+            canvas.translate(x, y)
+            if info.rotate != 0:
+                canvas.rotate(info.rotate)
+
+            t = canvas.beginText()
+            t.setFont('Courier', 10)
+            t.setTextOrigin(0, 0)
+            t.textLines(info.text)
+            canvas.drawText(t)
+
+            canvas.restoreState()
+
+        canvas.save()
+        return PdfFileReader(buf).getPage(0)
+
+
+
+def get_blank_page():
+    inch = 72
+    return PageObject.createBlankPage(width=8.5*inch, height=11*inch)
