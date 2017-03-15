@@ -1,17 +1,18 @@
 import sqlite3
+import operator
 
 
 class Database:
-    def __init__(self, orders):
+    def __init__(self):
         self.conn = sqlite3.connect(':memory:')
 
-    def executescript(sql):
+    def executescript(self, sql):
         cur = self.conn.cursor()
-        cur.executescript(
+        cur.executescript(sql)
         self.conn.commit()
 
-    def select(sql, fields=(), *params):
-        cur = conn.cursor()
+    def select(self, sql, fields=(), *params):
+        cur = self.conn.cursor()
         cur.execute(sql.format(fields=', '.join(fields)), params)
         def transform(row):
             if fields:
@@ -20,10 +21,9 @@ class Database:
                 return row
         return [transform(row) for row in cur.fetchall()]
 
-
-    def execute(sql, fields, params):
-        cur = conn.cursor()
+    def execute(self, sql, fields, params):
+        cur = self.conn.cursor()
         if isinstance(params, dict):
-            params = operator.itemgetter(fields)(kwargs)
+            params = operator.itemgetter(*fields)(params)
         cur.execute(sql.format(fields=', '.join(fields)), params)
-        conn.commit()
+        self.conn.commit()
