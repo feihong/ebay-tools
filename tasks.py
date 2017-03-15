@@ -212,10 +212,19 @@ def add_packing_data_to_labels(ctx, pdf_files=None, download_orders=True,
 
 
 @task
+def generate_simple_orders_file(ctx):
+    from trackingnumber import mapper
+    mapper.generate_simple_orders_file()
+
+
+@task
 def test_write_packing_info_to_labels(ctx):
     from packinginfo import PackingInfoWriter
-    writer = PackingInfoWriter()
+    writer = PackingInfoWriter(
+        # simple_orders_file='orders/shipped_orders_simple.json'
+    )
     writer.write_output_file()
+
 
 @task
 def download_csv_files(ctx):
