@@ -185,7 +185,7 @@ class PackingInfoWriter:
             label_count = sum(len(lst) for lst in tracking_num_collection)
 
         for i, tracking_numbers in enumerate(tracking_num_collection, 1):
-            output_infos = list(self._get_output_infos(tracking_numbers))
+            output_infos = list(self._get_output_infos(tracking_numbers, i))
 
             username = self._get_username(tracking_numbers)
             if username:
@@ -216,9 +216,13 @@ class PackingInfoWriter:
                     page = page2
                 self.input_pages.append(page)
 
-    def _get_output_infos(self, tracking_numbers):
+    def _get_output_infos(self, tracking_numbers, page_index):
         for tn in tracking_numbers:
             output = self.mapper.get_output(tn.value)
+            if output is None:
+                mesg = 'Found no orders linked to {} tracking number {} on page {}'.format(
+                    tn.type, tn.value, page_index+1)
+                raise Exception(mesg)
             yield OutputMeta.get_output_info(tn.type, output['packing_info'])
 
             notes = output['notes']
