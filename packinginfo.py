@@ -139,10 +139,10 @@ def get_center_line():
     return OutputMeta.get_output_info('bulk-domestic-center-line', '-  ' * 30)
 
 
-def get_page_number(num, total, label_count):
+def get_page_number(page_num, total, label_count):
     return OutputMeta.get_output_info(
         'page-number',
-        'Page {} of {} ({} labels)'.format(num, total, label_count))
+        'Page {} of {} ({} labels)'.format(page_num, total, label_count))
 
 
 def get_username(text):
@@ -185,7 +185,7 @@ class PackingInfoWriter:
             label_count = sum(len(lst) for lst in tracking_num_collection)
 
         for i, tracking_numbers in enumerate(tracking_num_collection, 1):
-            output_infos = list(self._get_output_infos(tracking_numbers, i))
+            output_infos = list(self._get_output_infos(tracking_numbers))
 
             username = self._get_username(tracking_numbers)
             if username:
@@ -216,12 +216,12 @@ class PackingInfoWriter:
                     page = page2
                 self.input_pages.append(page)
 
-    def _get_output_infos(self, tracking_numbers, page_index):
+    def _get_output_infos(self, tracking_numbers):
         for tn in tracking_numbers:
             output = self.mapper.get_output(tn.value)
             if output is None:
-                mesg = 'Found no orders linked to {} tracking number {} on page {}'.format(
-                    tn.type, tn.value, page_index+1)
+                tmpl = 'Found no orders linked to {} tracking number {} on page {} of {}'
+                mesg = tmpl.format(tn.type, tn.value, tn.page_number, tn.input_file)
                 raise Exception(mesg)
             yield OutputMeta.get_output_info(tn.type, output['packing_info'])
 

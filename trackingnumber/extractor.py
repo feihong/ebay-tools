@@ -64,15 +64,14 @@ class InvalidTrackingNumber(Exception):
 
 
 class TrackingNumber:
-    type = attr.ib(default='')
-    value = attr.ib(default='')
-
-    def __init__(self, type, value):
+    def __init__(self, type, value, input_file, page_number):
         self.type = type
+        self.input_file = input_file
+        self.page_number = page_number
 
-        prefix = 'USPSTRACKING#'
-        if value.startswith(prefix):
-            value = value[len(prefix):].strip()
+        # prefix = 'USPSTRACKING#'
+        # if value.startswith(prefix):
+        #     value = value[len(prefix):].strip()
         self.value = value
 
         if 'domestic' in type and not re.match(r'\d{22}', value):
@@ -97,16 +96,16 @@ class TrackingNumberExtractor:
 
     def get_tracking_numbers(self):
         for pdf_file in self.input_files:
-            for i, page in enumerate(get_pages_for_pdf(pdf_file)):
+            for i, page in enumerate(get_pages_for_pdf(pdf_file), 1):
                 # Yield a list of tracking numbers for each page.
-                yield list(self._get_tracking_numbers(page))
+                yield list(self._get_tracking_numbers(page, str(pdf_file), i))
 
     def _get_input_files(self, dir_path):
         for pdf_file in dir_path.glob('*.pdf'):
             if not pdf_file.stem.endswith('-packing'):
                 yield pdf_file
 
-    def _get_tracking_numbers(self, page):
+    def _get_tracking_numbers(self, page, input_file, page_number):
         result = defaultdict(list)
 
         for word in page.findall('word'):
@@ -115,9 +114,10 @@ class TrackingNumberExtractor:
             if meta is not None:
                 result[meta.type].append(word.text)
 
-        for k, v in result.items():
+        for type, values in result.items():
             try:
-                yield TrackingNumber(type=k, value=''.join(v))
+                yield TrackingNumber(
+                    type, ''.join(values), input_file, page_number)
             except InvalidTrackingNumber:
                 pass
 
