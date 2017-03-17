@@ -51,7 +51,7 @@ TrackingNumberReadMeta.add_meta(
 )
 TrackingNumberReadMeta.add_meta(
     type='single-domestic',
-    bbox=(294, 431, 155, 12),
+    bbox=(294, 429, 155, 12),
 )
 TrackingNumberReadMeta.add_meta(
     type='single-foreign',

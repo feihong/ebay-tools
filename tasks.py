@@ -219,7 +219,7 @@ def generate_simple_orders_file(ctx):
 
 @task
 def test_get_tracking_numbers(ctx):
-    from trackingnumber.extractor2 import TrackingNumberExtractor
+    from trackingnumber.extractor import TrackingNumberExtractor
     extractor = TrackingNumberExtractor('.')
     for tn_list in extractor.get_tracking_numbers():
         print(tn_list)
@@ -240,6 +240,7 @@ def test_write_packing_info_to_labels(ctx, skip_download=False,
         label_count=label_count,
         # simple_orders_file='orders/shipped_orders_simple.json'
     )
+    # writer.write_output_file('test-packing.pdf')
     writer.write_output_file()
 
 
