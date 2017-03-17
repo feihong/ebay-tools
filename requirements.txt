@@ -11,5 +11,5 @@ plim
 pycountry
 PyDrive
 PyPDF2
-pyquery
+etree
 reportlab

@@ -2,9 +2,10 @@ import subprocess
 import tempfile
 from pathlib import Path
 import re
+from collections import defaultdict
 
 import attr
-from pyquery import PyQuery
+from lxml import etree
 from PyPDF2 import PdfFileWriter, PdfFileReader
 
 
@@ -14,20 +15,24 @@ class TrackingNumberReadMeta:
     This class stores the bounding box for a particular type of tracking number.
 
     """
-    entries = {}
+    entries = []
 
     type = attr.ib(default='')
-    # Coordinates where tracking number is found (left, top).
-    coords = attr.ib(default=(0, 0))
+    # Bounding box where tracking number is found (left, top, width, height).
+    bbox = attr.ib(default=(0, 0, 0, 0))
 
     @classmethod
-    def add_meta(cls, type, coords):
-        s_coords = (str(coords[0]), str(coords[1]))
-        cls.entries[s_coords] = TrackingNumberReadMeta(type=type, coords=coords)
+    def add_meta(cls, type, bbox):
+        point = bbox[:2]
+        cls.entries.append(TrackingNumberReadMeta(type=type, bbox=bbox))
 
     @classmethod
     def get(cls, coords):
-        return cls.entries.get(coords)
+        for meta in cls.entries:
+            if contains(meta.bbox, coords):
+                return meta
+
+        return None
 
     def __repr__(self):
         return 'TrackingNumberReadMeta<{}>'.format(self.type)
@@ -35,24 +40,28 @@ class TrackingNumberReadMeta:
 
 TrackingNumberReadMeta.add_meta(
     type='bulk-domestic-top',
-    coords=(198, 677),
+    bbox=(147, 129, 10, 135),
 )
 TrackingNumberReadMeta.add_meta(
     type='bulk-domestic-bottom',
-    coords=(792, 677),
+    bbox=(147, 524, 10, 135),
 )
 TrackingNumberReadMeta.add_meta(
     type='bulk-foreign',
-    coords=(497, 528),
+    bbox=(324, 350, 140, 20),
 )
 TrackingNumberReadMeta.add_meta(
     type='single-domestic',
-    coords=(447, 624),
+    bbox=(294, 431, 155, 12),
 )
 TrackingNumberReadMeta.add_meta(
     type='single-foreign',
-    coords=(1, 1),      # need to fill out
+    bbox=(1, 1, 3, 3),      # need to fill out
 )
+
+
+class InvalidTrackingNumber(Exception):
+    pass
 
 
 class TrackingNumber:
@@ -69,11 +78,11 @@ class TrackingNumber:
 
         if 'domestic' in type and not re.match(r'\d{22}', value):
             mesg = '{} is not a valid domestic tracking number'.format(value)
-            raise Exception(mesg)
+            raise InvalidTrackingNumber(mesg)
 
         if 'foreign' in type and not re.match(r'[A-Z]{2}\d{9}US', value):
             mesg = '{} is not a valid foreign tracking number'.format(value)
-            raise Exception(mesg)
+            raise InvalidTrackingNumber(mesg)
 
     def __repr__(self):
         return '{}:{}'.format(self.type, self.value)
@@ -89,90 +98,57 @@ class TrackingNumberExtractor:
 
     def get_tracking_numbers(self):
         for pdf_file in self.input_files:
-            for page in get_all_html_pages_for_pdf(pdf_file):
+            for i, page in enumerate(get_pages_for_pdf(pdf_file)):
                 # Yield a list of tracking numbers for each page.
-                page_results = []
-                for elem in page.get_p_elements():
-                    coords = self._get_coords(elem)
-                    meta = TrackingNumberReadMeta.get(coords)
-                    if meta is not None:
-                        text = PyQuery(elem).text().replace('\xa0', '')
-                        page_results.append(
-                            TrackingNumber(type=meta.type, value=text))
-
-                yield page_results
+                yield list(self._get_tracking_numbers(page))
 
     def _get_input_files(self, dir_path):
         for pdf_file in dir_path.glob('*.pdf'):
             if not pdf_file.stem.endswith('-packing'):
                 yield pdf_file
 
-    def _get_coords(self, elem):
-        text = elem.get('style')
-        match = re.search(r'top:(\d+)px;left:(\d+)px;', text)
-        top, left = match.groups()
-        return left, top
+    def _get_tracking_numbers(self, page):
+        result = defaultdict(list)
+
+        for word in page.findall('word'):
+            point = self._get_point(word)
+            meta = TrackingNumberReadMeta.get(point)
+            if meta is not None:
+                result[meta.type].append(word.text)
+
+        for k, v in result.items():
+            try:
+                yield TrackingNumber(type=k, value=''.join(v))
+            except InvalidTrackingNumber:
+                pass
+
+    def _get_point(self, word):
+        x = float(word.get('xMin'))
+        y = float(word.get('yMin'))
+        return x, y
 
 
-class PdfPage:
-    """
-    DOM representation of a PDF page. Includes both the normal and rotated
-    versions of the page.
-
-    """
-    def __init__(self, html, rotated_html):
-        self.doc = PyQuery(remove_html_namespace(html))
-        self.rotated_doc = PyQuery(remove_html_namespace(rotated_html))
-
-    def get_p_elements(self):
-        yield from self.doc('p')
-        yield from self.rotated_doc('p')
-
-
-def get_all_html_pages_for_pdf(pdf_file):
-    html_seq = get_html_pages_for_pdf(pdf_file)
-    rotated_pdf_file = create_rotated_pdf(pdf_file)
-    rotated_html_seq = get_html_pages_for_pdf(rotated_pdf_file)
-    for html, rotated_html in zip(html_seq, rotated_html_seq):
-        yield PdfPage(html, rotated_html)
-
-
-def get_html_pages_for_pdf(pdf_file):
+def get_pages_for_pdf(pdf_file):
     with tempfile.TemporaryDirectory() as dirpath:
         dirpath = Path(dirpath)
+        output_file = dirpath / 'output.html'
         cmd = [
-            'pdftohtml', '-c', str(pdf_file), str(dirpath / 'output.html')]
+            'pdftotext', '-bbox', str(pdf_file), str(output_file)]
         subprocess.check_call(cmd)
-        for html_file in dirpath.glob('*.html'):
-            if re.search(r'-\d+\.html$', html_file.name):
-                yield html_file.read_text()
-
-
-def create_rotated_pdf(pdf_file):
-    """
-    Create a copy of the given pdf file that is rotated, and return the path to
-    the output file. The output file will be generated in a temp directory.
-
-    """
-    reader = PdfFileReader(pdf_file.open('rb'), strict=False)
-    pages = (reader.getPage(i) for i in range(reader.numPages))
-
-    handle, tmpfile = tempfile.mkstemp(suffix='.pdf')
-    with open(tmpfile, 'wb') as fp:
-        writer = PdfFileWriter()
-        for page in pages:
-            page.rotateCounterClockwise(90)
-            writer.addPage(page)
-        writer.write(fp)
-
-    return tmpfile
+        html = remove_html_namespace(output_file.read_text())
+        root = etree.fromstring(html)
+        return root.findall('body/doc/page')
 
 
 def remove_html_namespace(html):
     """
-    Removing the namespace from the HTML will allow PyQuery to use css
-    selector queries.
+    Removing the namespace from the HTML will us to use xpath selectors more
+    easily in lxml.etree.
 
     """
-    return html.replace(
-        'xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang=""', '')
+    return html.replace('xmlns="http://www.w3.org/1999/xhtml"', '')
+
+
+def contains(bbox, point):
+    x, y, w, h = bbox
+    return x <= point[0] <= (x+w) and y <= point[1] <= (y+h)

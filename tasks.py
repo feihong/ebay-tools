@@ -218,6 +218,14 @@ def generate_simple_orders_file(ctx):
 
 
 @task
+def test_get_tracking_numbers(ctx):
+    from trackingnumber.extractor2 import TrackingNumberExtractor
+    extractor = TrackingNumberExtractor('.')
+    for tn_list in extractor.get_tracking_numbers():
+        print(tn_list)
+
+
+@task
 def test_write_packing_info_to_labels(ctx, skip_download=False,
                                       label_count=None):
     if not skip_download:
