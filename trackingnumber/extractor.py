@@ -1,5 +1,4 @@
 import subprocess
-import tempfile
 from pathlib import Path
 import re
 from collections import defaultdict
@@ -129,15 +128,11 @@ class TrackingNumberExtractor:
 
 
 def get_pages_for_pdf(pdf_file):
-    with tempfile.TemporaryDirectory() as dirpath:
-        dirpath = Path(dirpath)
-        output_file = dirpath / 'output.html'
-        cmd = [
-            'pdftotext', '-bbox', str(pdf_file), str(output_file)]
-        subprocess.check_call(cmd)
-        html = remove_html_namespace(output_file.read_text())
-        root = etree.fromstring(html)
-        return root.findall('body/doc/page')
+    cmd = ['pdftotext', '-bbox', str(pdf_file), '-']
+    html = subprocess.check_output(cmd).decode('utf-8')
+    html = remove_html_namespace(html)
+    root = etree.fromstring(html)
+    return root.findall('body/doc/page')
 
 
 def remove_html_namespace(html):
