@@ -122,7 +122,7 @@ def get_packing_info(order):
         else:
             text = item['model']
 
-        meta = item_metadata_map.get(item['model'], {'Location': '?'})
+        meta = item_metadata_map.get(item['model'], {'Location': '_'})
         text += ' ' + meta['Location']
         result.append(text)
 

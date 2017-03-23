@@ -9,8 +9,8 @@
     .addl-detail { color: gray; }
     .highlight { background-color: moccasin; }
     input { margin-right: 1em; width: 20em; }
-    .awaiting-shipment, .shipping-labels { font-size: 2rem; }
-    .shipping-labels { margin-bottom: 8rem; }
+    .links { font-size: 1.7rem; margin-bottom: 2rem; }
+    main { margin-bottom: 6rem; }
 
 -block extrascript
   script src='http://code.jquery.com/jquery-3.1.1.slim.min.js'
@@ -39,11 +39,26 @@
   -if item['notes']
     div.addl-detail = item['notes']
 
+-def ebay_links()
+  div.links
+    div
+      a target='_blank' href='http://k2b-bulk.ebay.com/ws/eBayISAPI.dll?SalesRecordConsole&status=WaitShipment&currentpage=SCSold&ssPageName=STRK:ME:LNLK'
+        span.glyphicon.glyphicon-hand-right
+        &nbsp;
+        Orders awaiting shipment on eBay
+    div
+      a target='_blank' href='http://my.ebay.com/ws/eBayISAPI.dll?MyEbayBeta&CurrentPage=ShippingLabelMgmt&ssPageName=STRK:ME:LNLK:MELMGMTS'
+        span.glyphicon.glyphicon-hand-right
+        &nbsp;
+        Shipping labels
+
 
 main.container
   h1 = title()
 
   p Downloaded ${download_time.format('dddd, YYYY-MM-DD hh:mm A')}
+
+  = ebay_links()
 
   -for order in orders
     table.table.table-striped.table-bordered
@@ -69,14 +84,4 @@ main.container
                   = additional_details(item)
             = copy_display(order)
 
-  div.awaiting-shipment
-    a target='_blank' href='http://k2b-bulk.ebay.com/ws/eBayISAPI.dll?SalesRecordConsole&status=WaitShipment&currentpage=SCSold&ssPageName=STRK:ME:LNLK'
-      span.glyphicon.glyphicon-hand-right
-      &nbsp;
-      Orders awaiting shipment on eBay
-
-  div.shipping-labels
-    a target='_blank' href='http://my.ebay.com/ws/eBayISAPI.dll?MyEbayBeta&CurrentPage=ShippingLabelMgmt&ssPageName=STRK:ME:LNLK:MELMGMTS'
-      span.glyphicon.glyphicon-hand-right
-      &nbsp;
-      Shipping labels
+  = ebay_links()
