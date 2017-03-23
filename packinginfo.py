@@ -71,7 +71,7 @@ OutputMeta.add_meta(
     translate=(537, 143),
     rotate=-90,
     max_len=21,
-    max_lines=5,
+    max_lines=4,
 )
 OutputMeta.add_meta(
     type='single-domestic',
@@ -79,6 +79,13 @@ OutputMeta.add_meta(
     rotate=0,
     max_len=28,
     max_lines=2,
+)
+OutputMeta.add_meta(
+    type='single-foreign',
+    translate=(573, 165),
+    rotate=-90,
+    max_len=16,
+    max_lines=5,
 )
 OutputMeta.add_meta(
     type='bulk-domestic-center-line',
@@ -121,6 +128,20 @@ OutputMeta.add_meta(
     rotate=0,
     max_len=79,
     max_lines=3,
+)
+OutputMeta.add_meta(
+    type='single-domestic-notes',
+    translate=(29, 646),
+    rotate=0,
+    max_len=83,
+    max_lines=4,
+)
+OutputMeta.add_meta(
+    type='single-foreign-notes',
+    translate=(102, 634),
+    rotate=0,
+    max_len=83,
+    max_lines=4,
 )
 
 
