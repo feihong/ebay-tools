@@ -53,9 +53,10 @@ TrackingNumberReadMeta.add_meta(
     type='single-domestic',
     bbox=(294, 429, 155, 12),
 )
+# Note that the tracking number needs to be manually added for these.
 TrackingNumberReadMeta.add_meta(
     type='single-foreign',
-    bbox=(1, 1, 3, 3),      # need to fill out
+    bbox=(365, 430, 130, 18),
 )
 
 
