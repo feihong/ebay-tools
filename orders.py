@@ -172,6 +172,7 @@ def get_items(order):
     for transaction in order['TransactionArray']['Transaction']:
         item = transaction['Item']
         item['model'] = util.get_model_for_item(item['ItemID'])
+        item['weight'] = util.get_weight_from_model(item['model'])
         item['quantity'] = int(transaction['QuantityPurchased'])
         item['notes'] = util.get_notes_for_item(item['model'])
         yield item

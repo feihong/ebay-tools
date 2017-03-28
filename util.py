@@ -113,6 +113,28 @@ def get_model_for_item(item_id):
     return item_model_map.get(item_id, '?')
 
 
+def get_weight_from_model(model):
+    code = model.rsplit('-', 1)[1]
+    if code.endswith('b'):
+        code = code[:-1]
+        if '.' in code:
+            lb, oz = code.split('.')
+        else:
+            lb, oz = code, '0'
+        return float(lb) * 16 + float(oz)
+    else:
+        return float(code)
+
+
+def get_total_weight_of_orders(orders):
+    def gen():
+        for order in orders:
+            for item in order['items']:
+                yield item['weight']
+                
+    return sum(gen())
+
+
 def get_packing_info(order):
     result = []
 

@@ -65,8 +65,11 @@ def orders(request):
             orders_by_buyer[buyer_id].append(order)
 
     # Filter out buyers with less than 2 orders and convert to list of tuples.
-    multi_buyers = list(
-        (k, v) for k, v in orders_by_buyer.items() if len(v) > 1)
+    multi_buyers = [
+        (buyer_id, orders, util.get_total_weight_of_orders(orders))
+        for buyer_id, orders in orders_by_buyer.items()
+        if len(orders) > 1
+    ]
 
     return app.render(
         'static/orders/index.plim',
