@@ -10,7 +10,7 @@
 main.container
   h1 = title()
 
-  p Downloaded ${download_time.format('dddd, YYYY-MM-DD hh:mm A')}
+  p Downloaded ${download_time.format('dddd, hh:mm A (YYYY-MM-DD)')}
 
   h2 Orders by seller
 
@@ -19,12 +19,16 @@ main.container
       li
         a href='${user_id}/' ${user_id} (${count})
 
-  -python
-    pairs = [pair for pair in buyer_order_counts.items() if pair[1] > 1]
-
-  -if len(pairs)
+  -if len(multi_buyers)
     h2 Buyers with multiple orders
 
-    ul
-      -for buyer_user_id, count in pairs
-          li ${buyer_user_id}: ${count}
+    -for buyer_id, orders in multi_buyers:
+      h3 ${buyer_id} (${len(orders)})
+
+      table.table.table-bordered.table-striped
+        tbody
+        -for order in orders:
+          tr
+            td = order['username']
+            td = order['packing_info']
+            td = ' &boxV; '.join(order['address'].splitlines())

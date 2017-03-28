@@ -53,21 +53,26 @@ def orders(request):
 
     # Count the number of orders for each seller.
     seller_order_counts = OrderedDict()
-    # Count the number of orders for each buyer.
-    buyer_order_counts = defaultdict(int)
+    # Dict of orders keyed by buyer ID.
+    orders_by_buyer = defaultdict(list)
 
-    for user_id, orders in pkg['payload'].items():
+    for username, orders in pkg['payload'].items():
         orders.sort(key=lambda x: x['PaidTime'])
-        seller_order_counts[user_id] = len(orders)
+        seller_order_counts[username] = len(orders)
+
         for order in orders:
             buyer_id = order['BuyerUserID']
-            buyer_order_counts[buyer_id] += 1
+            orders_by_buyer[buyer_id].append(order)
+
+    # Filter out buyers with less than 2 orders and convert to list of tuples.
+    multi_buyers = list(
+        (k, v) for k, v in orders_by_buyer.items() if len(v) > 1)
 
     return app.render(
         'static/orders/index.plim',
         download_time=pkg['download_time'],
         seller_order_counts=seller_order_counts,
-        buyer_order_counts=buyer_order_counts)
+        multi_buyers=multi_buyers)
 
 
 @app.register('/orders/{user}/')
