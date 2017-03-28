@@ -72,15 +72,17 @@ def orders(request):
 
 @app.register('/orders/{user}/')
 def orders_for_user(request):
-    import orders
-    pkg = orders.load_orders('orders.json')
+    from orders import load_orders
+    pkg = load_orders('orders.json')
     user = request.match_info.get('user')
 
-    for user_, orders in pkg['payload'].items():
+    orders = None
+    for user_, orders_ in pkg['payload'].items():
         if user == user_:
-            orders.sort(key=lambda x: x['PaidTime'])
+            orders = orders_
             break
 
+    orders.sort(key=lambda x: x['PaidTime'])
     return app.render(
         'static/orders/by_user.plim',
         download_time=pkg['download_time'],

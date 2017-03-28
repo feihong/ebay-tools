@@ -1,7 +1,7 @@
 -inherit static/base.plim
 
 -block title
-  Orders awaiting shipment for ${user}
+  Orders awaiting shipment for ${user} (${len(orders)})
 
 -block extrahead
   style
@@ -45,7 +45,7 @@
       a target='_blank' href='http://k2b-bulk.ebay.com/ws/eBayISAPI.dll?SalesRecordConsole&status=WaitShipment&currentpage=SCSold&ssPageName=STRK:ME:LNLK'
         span.glyphicon.glyphicon-hand-right
         &nbsp;
-        Orders awaiting shipment on eBay
+        Orders awaiting shipment on eBay (${len(orders)})
     div
       a target='_blank' href='http://my.ebay.com/ws/eBayISAPI.dll?MyEbayBeta&CurrentPage=ShippingLabelMgmt&ssPageName=STRK:ME:LNLK:MELMGMTS'
         span.glyphicon.glyphicon-hand-right
@@ -56,7 +56,7 @@
 main.container
   h1 = title()
 
-  p Downloaded ${download_time.format('dddd, YYYY-MM-DD hh:mm A')}
+  p Downloaded ${download_time.format('dddd, hh:mm A (YYYY-MM-DD)')}
 
   = ebay_links()
 
