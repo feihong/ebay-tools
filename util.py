@@ -114,16 +114,19 @@ def get_model_for_item(item_id):
 
 
 def get_weight_from_model(model):
-    code = model.rsplit('-', 1)[1]
-    if code.endswith('b'):
-        code = code[:-1]
-        if '.' in code:
-            lb, oz = code.split('.')
+    try:
+        code = model.rsplit('-', 1)[1]
+        if code.endswith('b'):
+            code = code[:-1]
+            if '.' in code:
+                lb, oz = code.split('.')
+            else:
+                lb, oz = code, '0'
+            return float(lb) * 16 + float(oz)
         else:
-            lb, oz = code, '0'
-        return float(lb) * 16 + float(oz)
-    else:
-        return float(code)
+            return float(code)
+    except:
+        return None
 
 
 def get_total_weight_of_orders(orders):
@@ -131,7 +134,7 @@ def get_total_weight_of_orders(orders):
         for order in orders:
             for item in order['items']:
                 yield item['weight']
-                
+
     return sum(gen())
 
 
