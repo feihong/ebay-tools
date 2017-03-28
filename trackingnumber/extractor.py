@@ -47,7 +47,7 @@ TrackingNumberReadMeta.add_meta(
 )
 TrackingNumberReadMeta.add_meta(
     type='bulk-foreign',
-    bbox=(324, 350, 140, 20),
+    bbox=(295, 350, 200, 25),
 )
 TrackingNumberReadMeta.add_meta(
     type='single-domestic',
@@ -69,17 +69,13 @@ class TrackingNumber:
         self.type = type
         self.input_file = input_file
         self.page_number = page_number
-
-        # prefix = 'USPSTRACKING#'
-        # if value.startswith(prefix):
-        #     value = value[len(prefix):].strip()
         self.value = value
 
-        if 'domestic' in type and not re.match(r'\d{22}', value):
+        if 'domestic' in type and not is_domestic_tracking_number(value):
             mesg = '{} is not a valid domestic tracking number'.format(value)
             raise InvalidTrackingNumber(mesg)
 
-        if 'foreign' in type and not re.match(r'[A-Z]{2}\d{9}US', value):
+        if 'foreign' in type and not is_foreign_tracking_number(value):
             mesg = '{} is not a valid foreign tracking number'.format(value)
             raise InvalidTrackingNumber(mesg)
 
@@ -119,13 +115,22 @@ class TrackingNumberExtractor:
             try:
                 yield TrackingNumber(
                     type, ''.join(values), input_file, page_number)
-            except InvalidTrackingNumber:
+            except InvalidTrackingNumber as err:
                 pass
 
     def _get_point(self, word):
         x = float(word.get('xMin'))
         y = float(word.get('yMin'))
         return x, y
+
+
+def is_domestic_tracking_number(value):
+    return re.match(r'\d{22}', value)
+
+
+def is_foreign_tracking_number(value):
+    return re.match(r'\d{22}', value) or re.match(r'[A-Z]{2}\d{9}US', value)
+
 
 
 def get_pages_for_pdf(pdf_file):
