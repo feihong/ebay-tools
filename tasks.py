@@ -214,8 +214,11 @@ def print_tracking_numbers(ctx):
     """
     from trackingnumber.extractor import TrackingNumberExtractor
     extractor = TrackingNumberExtractor('.')
-    for tn_list in extractor.get_tracking_numbers():
-        print(tn_list)
+    tracking_numbers = extractor.get_tracking_numbers()
+    for i, tn_list in enumerate(tracking_numbers, 1):
+        print('Page {}:'.format(i))
+        for tn in tn_list:
+            print('- {}'.format(tn))
 
 
 @task
