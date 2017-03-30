@@ -178,9 +178,6 @@ class PackingInfoWriter:
         self.mapper = TrackingNumberMapper(simple_orders_file)
 
     def write_output_file(self, output_file=None):
-        if output_file is None:
-            output_file = '{:%Y-%m-%d %H%M}-packing.pdf'.format(datetime.now())
-
         writer = PdfFileWriter()
         output_pages = self.get_output_pages()
 
@@ -188,6 +185,9 @@ class PackingInfoWriter:
             input_page.mergePage(output_page)
             writer.addPage(input_page)
 
+        if output_file is None:
+            output_file = '{:%Y-%m-%d %H%M} ({})+packing.pdf'.format(
+                datetime.now(), self.label_count)
         with open(output_file, 'wb') as fp:
             writer.write(fp)
         print('Wrote output to ' + output_file)
@@ -201,9 +201,8 @@ class PackingInfoWriter:
 
         tracking_num_collection = list(self.extractor.get_tracking_numbers())
         page_count = len(tracking_num_collection)
-        label_count = self.label_count
-        if label_count is None:
-            label_count = sum(len(lst) for lst in tracking_num_collection)
+        if self.label_count is None:
+            self.label_count = sum(len(lst) for lst in tracking_num_collection)
 
         for i, tracking_numbers in enumerate(tracking_num_collection, 1):
             output_infos = list(self._get_output_infos(tracking_numbers))
@@ -212,7 +211,7 @@ class PackingInfoWriter:
             if username:
                 output_infos.append(get_username(username))
 
-            output_infos.append(get_page_number(i, page_count, label_count))
+            output_infos.append(get_page_number(i, page_count, self.label_count))
 
             if len(tracking_numbers) >= 2:
                 output_infos.append(get_center_line())

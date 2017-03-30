@@ -99,7 +99,7 @@ class TrackingNumberExtractor:
 
     def _get_input_files(self, dir_path):
         for pdf_file in dir_path.glob('*.pdf'):
-            if not pdf_file.stem.endswith('-packing'):
+            if not pdf_file.stem.endswith('+packing'):
                 yield pdf_file
 
     def _get_tracking_numbers(self, page, input_file, page_number):
