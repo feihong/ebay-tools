@@ -75,7 +75,8 @@ OutputMeta.add_meta(
 )
 OutputMeta.add_meta(
     type='single-domestic',
-    translate=(223, 318),
+    # translate=(223, 318),
+    translate=(239, 327),
     rotate=0,
     max_len=28,
     max_lines=2,
