@@ -51,8 +51,8 @@ TrackingNumberReadMeta.add_meta(
 )
 TrackingNumberReadMeta.add_meta(
     type='single-domestic',
-#     bbox=(294, 429, 155, 12),
-    bbox=(309, 448, 160, 16),
+    bbox=(294, 429, 155, 12),
+    # bbox=(309, 448, 160, 16),
 )
 # Note that the tracking number needs to be manually added for these.
 TrackingNumberReadMeta.add_meta(
