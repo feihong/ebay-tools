@@ -54,11 +54,12 @@ TrackingNumberReadMeta.add_meta(
     bbox=(294, 429, 155, 12),
     # bbox=(309, 448, 160, 16),
 )
-# Note that the tracking number needs to be manually added for these.
-TrackingNumberReadMeta.add_meta(
-    type='single-foreign',
-    bbox=(365, 430, 130, 18),
-)
+# It's too hard to get these to work without intersecting with other types of
+# labels. You'll have to manually add these to the label.
+# TrackingNumberReadMeta.add_meta(
+#     type='single-foreign',
+#     bbox=(355, 370, 110, 15),
+# )
 
 
 class InvalidTrackingNumber(Exception):
