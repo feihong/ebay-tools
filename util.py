@@ -92,6 +92,14 @@ def get_item_metadata_map():
 item_metadata_map = get_item_metadata_map()
 
 
+def get_location_for_model(model):
+    map = item_metadata_map.get(model)
+    if map is None:
+        return None
+    else:
+        return map.get('Location')
+
+
 def get_notes_for_item(model):
     d = item_metadata_map.get(model)
     return d['Notes'] if d else None
@@ -136,6 +144,7 @@ def get_total_weight_of_orders(orders):
                 yield item['weight']
 
     return sum(gen())
+
 
 
 def get_packing_info(order):
