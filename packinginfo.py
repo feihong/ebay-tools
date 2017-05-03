@@ -6,6 +6,7 @@ import attr
 from reportlab.pdfgen.canvas import Canvas
 from PyPDF2 import PdfFileReader, PdfFileWriter
 from PyPDF2.pdf import PageObject
+from clint.textui import puts, colored
 
 from trackingnumber import TrackingNumberExtractor, TrackingNumberMapper
 
@@ -242,8 +243,10 @@ class PackingInfoWriter:
             output = self.mapper.get_output(tn.value)
             if output is None:
                 tmpl = 'Found no orders linked to {} tracking number {} on page {} of {}'
-                mesg = tmpl.format(tn.type, tn.value, tn.page_number, tn.input_file)
-                raise Exception(mesg)
+                warning = tmpl.format(tn.type, tn.value, tn.page_number, tn.input_file)
+                puts(colored.yellow(warning))
+                continue
+
             yield OutputMeta.get_output_info(tn.type, output['packing_info'])
 
             notes = output['notes']
@@ -254,7 +257,8 @@ class PackingInfoWriter:
     def _get_username(self, tracking_numbers):
         for tn in tracking_numbers:
             output = self.mapper.get_output(tn.value)
-            return output['username']
+            if output is not None:
+                return output['username']
 
         return None
 
