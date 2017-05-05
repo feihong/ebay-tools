@@ -159,7 +159,7 @@ class OutputInfo:
 
 
 def get_center_line():
-    return OutputMeta.get_output_info('bulk-domestic-center-line', '-  ' * 30)
+    return OutputMeta.get_output_info('bulk-domestic-center-line', '- ' * 44)
 
 
 def get_page_number(page_num, total, label_count):
@@ -247,12 +247,23 @@ class PackingInfoWriter:
                 puts(colored.yellow(warning))
                 continue
 
-            yield OutputMeta.get_output_info(tn.type, output['packing_info'])
+            output_info = OutputMeta.get_output_info(tn.type, output['packing_info'])
+            yield output_info
 
-            notes = output['notes']
+            # If output_info.text is too long, then move it to notes.
+            notes = None
+            if output_info.overflow:
+                notes = 'Items: ' + output_info.text.replace('\n', ' ')
+                output_info.text = 'LARGE ORDER'
+
+            if notes:
+                notes += '. ' + output['notes']
+            else:
+                notes = output['notes']
+
             if notes:
                 yield OutputMeta.get_output_info(
-                    tn.type + '-notes', 'Notes: ' + notes)
+                    tn.type + '-notes', notes)
 
     def _get_username(self, tracking_numbers):
         for tn in tracking_numbers:

@@ -212,7 +212,7 @@ def write_packing_info_to_labels(ctx, skip_download=False,
         label_count=label_count,
         # simple_orders_file='orders/shipped_orders_simple.json'
     )
-    # writer.write_output_file('test-packing.pdf')
+    # writer.write_output_file('test+packing.pdf')
     writer.write_output_file()
 
 
