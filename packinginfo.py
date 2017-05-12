@@ -257,7 +257,7 @@ class PackingInfoWriter:
                 output_info.text = 'LARGE ORDER'
 
             if notes:
-                notes += '. ' + output['notes']
+                notes += '. ' + (output.get('notes') or '')
             else:
                 notes = output['notes']
 
