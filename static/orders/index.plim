@@ -1,4 +1,4 @@
--inherit static/base.plim
+-inherit /base.plim
 
 -block title
   Orders awaiting shipment
@@ -17,7 +17,7 @@ main.container
   ul
     -for user_id, count in seller_order_counts.items():
       li
-        a href='${user_id}/' ${user_id} (${count})
+        a href='/orders/${user_id}/' ${user_id} (${count})
 
   -if len(multi_buyers)
     h2 Buyers with multiple orders

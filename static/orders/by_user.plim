@@ -1,4 +1,4 @@
--inherit static/base.plim
+-inherit /base.plim
 
 -block title
   Orders awaiting shipment for ${user} (${len(orders)})

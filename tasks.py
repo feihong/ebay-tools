@@ -2,13 +2,18 @@ import json
 from datetime import datetime
 from pathlib import Path
 from collections import OrderedDict, defaultdict
+import subprocess
 
-from invoke import task, run
+from invoke import task
 import arrow
 
 import config
 import util
 from misc_tasks import *
+
+
+def run(cmd):
+    subprocess.call(cmd, shell=True)
 
 
 @task
@@ -233,4 +238,6 @@ def web(ctx):
     Run the web app.
 
     """
-    run('muffin web run --bind=127.0.0.1:8000')
+    # run('muffin web run --bind=127.0.0.1:8000')
+    from web2 import app
+    app.run(port=8000, debug=True)

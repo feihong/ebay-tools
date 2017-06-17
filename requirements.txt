@@ -3,13 +3,14 @@ attr
 boto3
 clint
 ebaysdk
+Flask
 gspread
 Invoke
-muffin-playground
+lxml
+#muffin-playground
 oauth2client==3.0.0
 plim
 pycountry
 PyDrive
 PyPDF2
-etree
 reportlab

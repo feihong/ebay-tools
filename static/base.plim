@@ -7,13 +7,13 @@ html lang='en'
     title
       -block title
     -block style
-      link rel='stylesheet' href='/boilerplate/css/bootstrap-3.3.7.min.css'
+      link rel='stylesheet' href='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css'
     -block extrahead
 
   body
     = next.body()
 
     -block script
-      script src='/boilerplate/jquery-3.1.0.min.js'
-      script src='/boilerplate/js/bootstrap-3.3.7.min.js'
+      script src='https://code.jquery.com/jquery-3.1.1.min.js'
+      script src='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js'
     -block extrascript
