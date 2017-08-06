@@ -141,7 +141,11 @@ def get_total_weight_of_orders(orders):
     def gen():
         for order in orders:
             for item in order['items']:
-                yield item['weight']
+                if item['weight'] is not None:
+                    yield item['weight']
+                else:
+                    raise Exception('Item {} does not have a weight'.format(item))
+
 
     return sum(gen())
 
