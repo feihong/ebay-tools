@@ -4,21 +4,15 @@ import json
 
 from ebaysdk.trading import Connection as Trading
 
-from config import EBAY_CREDENTIALS
+import config
 import util
 
 
-def download_item_model_data(csv_file):
-    items = list(get_items({
-        'IncludeItemSpecifics': True,
-        'OutputSelector': [
-            'Item.Title',
-            'Item.ItemSpecifics.NameValueList',
-        ]
-    }))
+def rebuild_item_model_csv(output_file):
+    items = list(get_items())
     items.sort(key=lambda x: x['model'])
 
-    with open(csv_file, 'w') as fp:
+    with open(output_file, 'w') as fp:
         fieldnames = ['model', 'item_id', 'title', 'user']
         writer = csv.DictWriter(fp, fieldnames=fieldnames)
         writer.writeheader()
@@ -31,7 +25,7 @@ def download_item_model_data(csv_file):
             )
             writer.writerow(row)
 
-    print('Wrote {} rows to {}'.format(len(items), csv_file))
+    print('Wrote {} rows to {}'.format(len(items), output_file))
 
 
 def download_item_shipping_data(csv_file):
@@ -69,14 +63,16 @@ def download_item_shipping_data(csv_file):
     print('Wrote {} rows to {}'.format(len(items), csv_file))
 
 
-def get_items(params):
-    for user, cred in EBAY_CREDENTIALS:
-        request = ItemRequest(cred)
-        for item_id in request.get_item_ids():
-            print('Fetching item {}'.format(item_id))
-            item = request.get_item(item_id, params)
-            item.update(item_id=item_id, user=user, model=get_model(item))
-            yield item
+def get_items():
+    for dir_ in (p for p in config.BACKUP_PATH.iterdir() if p.is_dir()):
+        user = dir_.stem
+        for item_file in dir_.glob('*.json'):
+            with item_file.open() as fp:
+                item = json.load(fp)
+                item.update(
+                    item_id=item['ItemID'], user=user, model=get_model(item))
+                yield item
+
 
 
 class ItemRequest:
@@ -128,7 +124,10 @@ def get_model(item):
         for spec in item['ItemSpecifics']['NameValueList']
         if spec['Name'] == 'Model'
     ]
-    return model[0]
+    if len(model) > 0:
+        return model[0]
+    else:
+        return 'N/A'
 
 
 def get_weight(item):

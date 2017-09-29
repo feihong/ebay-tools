@@ -147,13 +147,13 @@ def process_return_label(ctx, pdf_file):
 
 
 @task
-def download_item_model_data(ctx):
+def rebuild_item_model_csv(ctx):
     """
-    Download item's model data to item_model.csv.
+    Rebuild the item_model.csv file
 
     """
     import items
-    items.download_item_model_data('item_model.csv')
+    items.rebuild_item_model_csv('item_model.csv')
 
 
 @task
