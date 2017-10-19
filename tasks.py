@@ -222,14 +222,14 @@ def write_packing_info_to_labels(ctx, skip_download=False,
 
 
 @task
-def download_csv_files(ctx):
+def download_item_location_csv(ctx):
     """
     Download the latest versions of item_location.csv and item_model.csv from
     Google Drive.
 
     """
     import gsheet
-    gsheet.download_csv_files()
+    gsheet.download_item_location_csv()
 
 
 @task

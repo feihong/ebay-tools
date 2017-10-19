@@ -12,16 +12,14 @@ def get_client():
     return gspread.authorize(credentials)
 
 
-def download_csv_files():
+def download_item_location_csv():
     client = get_client()
     spreadsheet = client.open('ebay items')
-    worksheet_names = ['item_model', 'item_location']
-    for name in worksheet_names:
-        path = Path(name + '.csv')
-        print('Writing {}'.format(path))
-        worksheet = spreadsheet.worksheet(name)
-
-        with path.open('w') as fp:
-            writer = csv.writer(fp)
-            for row in worksheet.get_all_values():
-                writer.writerow(row)
+    name = 'item_location'
+    output_path = Path(name + '.csv')
+    worksheet = spreadsheet.worksheet(name)
+    with output_path.open('w') as fp:
+        writer = csv.writer(fp)
+        for row in worksheet.get_all_values():
+            writer.writerow(row)
+    print(f'Downloaded {output_path}')
