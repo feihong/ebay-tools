@@ -1,14 +1,23 @@
 -inherit /base.plim
 
 -block title
-  Orders awaiting shipment
+  EBay Tools
 
--block extrahead
-  link rel='stylesheet' href='styles.styl'
-
+-block extrascript
+  script src='/static/scripts/jsfx.js'
+  script src='/static/scripts/sound_effects.js'
+  script src='/static/orders/main.js'
 
 main.container
-  h1 = title()
+  h2 Commands
+
+  ul
+    li
+      a.download-awaiting href='#' Download orders awaiting shipment
+    li
+      a.write-packing href='#' Write packing info to shipping labels
+
+  h2 Orders awaiting shipment
 
   p Downloaded ${download_time.format('dddd, hh:mm A (YYYY-MM-DD)')}
 

@@ -72,3 +72,20 @@ def orders_for_user(user):
         download_time=pkg['download_time'],
         user=user,
         orders=orders)
+
+
+@app.route('/commands/download-awaiting/')
+def download_orders_awaiting_shipment():
+    import orders
+    orders.download_orders_awaiting_shipment
+    return 'ok'
+
+
+@app.route('/commands/write-packing/')
+def write_packing_info_to_labels():
+    from packinginfo import PackingInfoWriter
+    writer = PackingInfoWriter(
+        label_count=label_count
+    )
+    writer.write_output_file()
+    return 'ok'

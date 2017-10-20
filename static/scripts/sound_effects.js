@@ -1,9 +1,9 @@
-"""
+/*
 Generated from this page: http://loov.io/jsfx/
 
-"""
+*/
 
-soundEffectsLibrary = {
+let soundEffectsLibrary = {
   "success": {
     "Generator": {
       "Func": "sine"
