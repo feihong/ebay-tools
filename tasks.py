@@ -238,6 +238,5 @@ def web(ctx):
     Run the web app.
 
     """
-    # run('muffin web run --bind=127.0.0.1:8000')
     from web2 import app
     app.run(port=8000, debug=True)
