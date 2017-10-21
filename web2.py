@@ -77,15 +77,18 @@ def orders_for_user(user):
 @app.route('/commands/download-awaiting/')
 def download_orders_awaiting_shipment():
     import orders
-    orders.download_orders_awaiting_shipment
+    orders.download_orders_awaiting_shipment()
     return 'ok'
 
 
 @app.route('/commands/write-packing/')
 def write_packing_info_to_labels():
+    import orders
+    orders.download_shipped_orders()
+    
     from packinginfo import PackingInfoWriter
     writer = PackingInfoWriter(
-        label_count=label_count
+        label_count=None
     )
     writer.write_output_file()
     return 'ok'
