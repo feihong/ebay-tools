@@ -88,8 +88,10 @@ def get_item_metadata_map():
 
     return result
 
-
-item_metadata_map = get_item_metadata_map()
+try:
+    item_metadata_map = get_item_metadata_map()
+except FileNotFoundError:
+    pass
 
 
 def get_location_for_model(model):
@@ -113,8 +115,10 @@ def get_item_model_map():
             result[item_id] = row['model']
     return result
 
-
-item_model_map = get_item_model_map()
+try:
+    item_model_map = get_item_model_map()
+except FileNotFoundError:
+    pass
 
 
 def get_model_for_item(item_id):
