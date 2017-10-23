@@ -118,7 +118,7 @@ def send_email(ctx):
     count = 0
     body = []
 
-    for user_id, cred in config.EBAY_CREDENTIALS:
+    for user_id, cred in config.EBAY_CREDENTIALS.items():
         request = OrderRequest(cred)
         orders = list(request.get_orders())
         line = '{user_id} has {count} orders awaiting shipment'.format(
@@ -172,7 +172,7 @@ def show_users(ctx):
     Show all users from the config file.
 
     """
-    for user_id, cred in config.EBAY_CREDENTIALS:
+    for user_id, cred in config.EBAY_CREDENTIALS.items():
         print(user_id)
 
 

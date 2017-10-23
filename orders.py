@@ -41,7 +41,7 @@ def download_orders(output_file, method):
     order_count = 0
     result = dict(payload={})
 
-    for user_id, cred in config.EBAY_CREDENTIALS:
+    for user_id, cred in config.EBAY_CREDENTIALS.items():
         request = OrderRequest(cred)
         get_orders = getattr(request, method)
         orders = list(get_orders())
