@@ -5,9 +5,8 @@ clint==0.5.1
 ebaysdk==2.1.4
 Flask==0.12.2
 gspread==0.6.2
-invoke==0.21.1
+invoke==0.22.0
 lxml==3.8.0
-#muffin-playground
 oauth2client==3.0.0
 Plim==0.9.12
 pycountry==17.5.14

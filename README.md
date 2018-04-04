@@ -10,6 +10,12 @@ mkvirtualenv -p python3.5 ebay
 pip install -r requirements.txt
 ```
 
+## Running
+
+```
+inv web
+```
+
 # Crontab entry
 
 Send an email reporting how many orders are awaiting shipping, every hour between 8 am and 10 pm.

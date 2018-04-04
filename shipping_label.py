@@ -18,8 +18,8 @@ def get_cropped_page(pdf_file):
     # Set strict to False because document may not have unique keys.
     reader = PdfFileReader(fp, strict=False)
     page = reader.getPage(0)
-    page.mediaBox.lowerLeft = (65, 445)
-    page.mediaBox.upperRight = (540, 750)
+    page.mediaBox.lowerLeft = (75, 425)
+    page.mediaBox.upperRight = (560, 750)
     return page
 
 
