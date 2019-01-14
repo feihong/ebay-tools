@@ -39,11 +39,11 @@ class TrackingNumberReadMeta:
 
 TrackingNumberReadMeta.add_meta(
     type='bulk-domestic-top',
-    bbox=(147, 129, 10, 135),
+    bbox=(150, 129, 20, 140),
 )
 TrackingNumberReadMeta.add_meta(
     type='bulk-domestic-bottom',
-    bbox=(147, 524, 10, 135),
+    bbox=(150, 518, 20, 140),
 )
 TrackingNumberReadMeta.add_meta(
     type='bulk-foreign',

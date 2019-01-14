@@ -55,14 +55,14 @@ class OutputMeta:
 
 OutputMeta.add_meta(
     type='bulk-domestic-top',
-    translate=(244, 316),
+    translate=(250, 316),
     rotate=0,
     max_len=27,
     max_lines=2,
 )
 OutputMeta.add_meta(
     type='bulk-domestic-bottom',
-    translate=(244, 713),
+    translate=(250, 713),
     rotate=0,
     max_len=27,
     max_lines=2,
