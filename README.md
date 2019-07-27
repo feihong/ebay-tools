@@ -6,8 +6,8 @@
 ```
 git clone https://github.com/feihong/ebay-tools
 cd ebay-tools
-mkvirtualenv -p python3.5 ebay
-pip install -r requirements.txt
+mkvirtualenv -p python3 ebay
+pipenv install
 ```
 
 ## Running
